@@ -62,7 +62,7 @@ public class VisionUtil {
         return contours;
     }
 
-
+/*
     public RotatedRect[] getFittedEllipses(Mat input, List<MatOfPoint> contours){
         RotatedRect[contours.size()] rects;
         for (int i = 0; i < contours.size(); i++) {
@@ -70,7 +70,7 @@ public class VisionUtil {
                 fittedEllipse[i] = Imgproc.fitEllipse(new MatOfPoint2f(contours.get(i).toArray()));
             }
     }
-
+*/
     // Simplify the eocv method a little bit
     public void drawContours(Mat outputmat, List<MatOfPoint> contours, Scalar color){
         Imgproc.drawContours(outputmat, contours, -1, color, 1);
