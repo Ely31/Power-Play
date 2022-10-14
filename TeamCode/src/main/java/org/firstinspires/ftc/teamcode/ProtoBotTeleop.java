@@ -8,12 +8,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
+import org.firstinspires.ftc.teamcode.drive.TeleMecDriveStrafer;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 
 @TeleOp
 public class ProtoBotTeleop extends LinearOpMode {
     // Pre init
-    TeleMecDrive drive;
+    TeleMecDriveStrafer drive;
     TimeUtil timeUtil = new TimeUtil();
     ElapsedTime timer = new ElapsedTime();
 
@@ -24,9 +25,9 @@ public class ProtoBotTeleop extends LinearOpMode {
         // Init
         PhotonCore.enable();
         telemetry.setMsTransmissionInterval(100);
-        drive = new TeleMecDrive(hardwareMap, 0.4);
+        drive = new TeleMecDriveStrafer(hardwareMap, 0.4);
 
-        intake = hardwareMap.get(DcMotorEx.class, "penis");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
 
         waitForStart();
         timer.reset();
@@ -39,31 +40,21 @@ public class ProtoBotTeleop extends LinearOpMode {
             if (gamepad1.back) drive.resetHeading();
 
 
-            /*
-            // Configure driving parameters with buttons
-            if (gamepad1.a) drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            if (gamepad1.b) drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-            if (gamepad1.x) drive.setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            if (gamepad1.y) drive.setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-             */
-
             if (gamepad1.a){
                 intake.setPower(1);
             }
-            if(gamepad1.b){
+            else if(gamepad1.b){
                 intake.setPower(-1);
             }
             else {
                 intake.setPower(0);
             }
 
-            telemetry.addData("maxRPMFraction", drive.lfMaxRPMFraction);
-            telemetry.addData("Runmode", drive.runMode);
-            telemetry.addData("ZeroPowerBehavior", drive.zeroPowerBehavior);
+            telemetry.addData("heading", drive.heading);
+            telemetry.addData("wheel powers", drive.getWheelPowers());
+            telemetry.addData("right trigger", gamepad1.right_trigger);
             telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
             telemetry.addData("period", timeUtil.getPeriod());
-            telemetry.addData("time", timer.seconds());
             telemetry.update();
         }
     }
