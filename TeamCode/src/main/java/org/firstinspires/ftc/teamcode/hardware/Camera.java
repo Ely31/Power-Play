@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -27,6 +28,7 @@ public class Camera {
 
             }
         });
+        FtcDashboard.getInstance().startCameraStream(webcam, 10);
     }
 
     public void stopStreaming(){
