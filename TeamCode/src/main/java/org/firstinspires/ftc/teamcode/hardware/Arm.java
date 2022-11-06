@@ -43,4 +43,9 @@ public class Arm {
         leftPivot.setPosition(pos);
         rightPivot.setPosition(pos);
     }
+
+
+    public void setEndPosition(double pos){
+        end.setPosition(pos);
+    }
 }

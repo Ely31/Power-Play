@@ -26,7 +26,14 @@ public class ArmTest extends LinearOpMode {
                 arm.openClaw();
             }
 
-            arm.setPivotPos(gamepad1.right_trigger);
+            arm.setPivotPos(gamepad1.right_trigger+.2);
+
+
+            if (gamepad1.circle) {
+                arm.setEndPosition(1);
+            } else {
+                arm.setEndPosition(0);
+            }
         }
     }
 }
