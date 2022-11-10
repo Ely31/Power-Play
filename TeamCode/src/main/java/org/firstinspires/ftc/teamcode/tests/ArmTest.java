@@ -30,9 +30,9 @@ public class ArmTest extends LinearOpMode {
 
 
             if (gamepad1.circle) {
-                arm.setEndPosition(1);
+                arm.setEndPos(1);
             } else {
-                arm.setEndPosition(0);
+                arm.setEndPos(0);
             }
         }
     }

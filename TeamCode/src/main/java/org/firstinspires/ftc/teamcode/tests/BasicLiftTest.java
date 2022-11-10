@@ -3,19 +3,19 @@ package org.firstinspires.ftc.teamcode.tests;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.BasicLift;
 
 @TeleOp(name="",group="")
-public class LiftTest extends LinearOpMode {
+public class BasicLiftTest extends LinearOpMode {
     // Pre-init
 
-    Lift lift;
+    BasicLift lift;
     
     @Override
     public void runOpMode() {
         // Init
 
-        lift = new Lift(hardwareMap);
+        lift = new BasicLift(hardwareMap);
 
     
         waitForStart();
