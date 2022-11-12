@@ -13,31 +13,27 @@ public class Arm {
     Servo end;
     Servo claw;
 
+    boolean mode = true; // True is passthrough, false is sameside
+
     // Constants
-    double pivotMax = 1;
-    double pivotMin = 0;
-    public static double pivotPassthroughGrabbingPos = 0.2;
-    public static double pivotSamesideGrabbingPos = 0.5;
-    public static double pivotScoringPos = 0.6;
-    public static double pivotLowScoringPos = 0.8;
+    public static double leftOffset = -0.025;
+
+    public static double pivotMax = 0.97;
+    public static double pivotMin = 0.065;
+    public static double pivotPassthroughGrabbingPos = pivotMin;
+    public static double pivotSamesideGrabbingPos = 0.9;
+    public static double pivotScoringPos = 0.7;
+    public static double pivotLowScoringPos = 0.9;
 
     public static double endMin = 0;
     public static double endMax = 1;
-    public static double endPassthroughGrabbingPos = 0.5;
-    public static double endPassthroughScoringPos = 0.5;
-    public static double endSamesideGrabbingPos = 0.5;
-    public static double endSamesideScoringPos = 0.5;
+    public static double endPassthroughGrabbingPos = 0.1;
+    public static double endPassthroughScoringPos = 0;
+    public static double endSamesideGrabbingPos = 0.7;
+    public static double endSamesideScoringPos = 0.6;
 
     public static double clawClosedPos = 0.46;
     public static double clawOpenPos = 0.25;
-
-    // For the setState method
-    enum armState{
-        GRABBING_PASSTHROUGH,
-        SCORING_PASSTHROUGH,
-        GRABBING_SAMESIDE,
-        SCORING_SAMESIDE
-    }
 
     public Arm(HardwareMap hwmap){
         // Hardwaremap stuff
@@ -47,9 +43,10 @@ public class Arm {
         claw = hwmap.get(Servo.class, "claw");
 
         leftPivot.setDirection(Servo.Direction.REVERSE);
+        end.setDirection(Servo.Direction.REVERSE);
 
-        // Warning: robot moves on ititialization
-        setState(armState.GRABBING_PASSTHROUGH);
+        // Warning: Robot moves on intitialization
+        grabPassthrough();
     }
 
     // Methods for controlling each dof
@@ -62,37 +59,55 @@ public class Arm {
 
     public void setPivotPos(double pos){
         double finalPos = Utility.clipValue(pivotMin, pivotMax, pos);
-        leftPivot.setPosition(finalPos);
+        // We have to offset one of the servos becuase there is no positon on the splines where they are both at the exact same angle
+        leftPivot.setPosition(finalPos + leftOffset);
         rightPivot.setPosition(finalPos);
+    }
+    public double getPivotPos(){
+        // Take the pos of the one we didn't offset
+        return rightPivot.getPosition();
     }
 
     public void setEndPos(double pos){
         double finalPos = Utility.clipValue(endMin, endMax, pos);
         end.setPosition(finalPos);
     }
+    public double getEndPos(){
+        return end.getPosition();
+    }
 
-    // This is the big method that combines it all in an easy-to-use way
-    public void setState(armState state){
-        switch(state){
-            case GRABBING_PASSTHROUGH:
-                setPivotPos(pivotPassthroughGrabbingPos);
-                setEndPos(endPassthroughGrabbingPos);
-                break;
+    // All the different positions of the arm
+    public void grabPassthrough(){
+        setPivotPos(pivotPassthroughGrabbingPos);
+        setEndPos(endPassthroughGrabbingPos);
+    }
+    public void grabSameside(){
+        setPivotPos(pivotSamesideGrabbingPos);
+        setEndPos(endSamesideGrabbingPos);
+    }
+    public void scorePassthrough(){
+        setPivotPos(pivotScoringPos);
+        setEndPos(endPassthroughScoringPos);
+    }
+    public void scoreSameside(){
+        setPivotPos(pivotScoringPos);
+        setEndPos(endSamesideScoringPos);
+    }
 
-            case SCORING_PASSTHROUGH:
-                setPivotPos(pivotScoringPos);
-                setEndPos(endPassthroughScoringPos);
-                break;
+    // Use two modes to switch between passthrough and sameside strategies
+    public void setMode(boolean mode){
+        this.mode = mode;
+    }
+    public boolean getMode(){
+        return mode;
+    }
 
-            case GRABBING_SAMESIDE:
-                setPivotPos(pivotSamesideGrabbingPos);
-                setEndPos(endSamesideGrabbingPos);
-                break;
-
-            case SCORING_SAMESIDE:
-                setPivotPos(pivotScoringPos);
-                setEndPos(endSamesideScoringPos);
-                break;
-        }
+    public void goToGrab(){
+        if (mode) grabPassthrough();
+        else grabSameside();
+    }
+    public void goToScore(){
+        if (mode) scorePassthrough();
+        else scoreSameside();
     }
 }

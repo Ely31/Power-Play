@@ -13,10 +13,9 @@ public class ArmTest extends LinearOpMode {
     public void runOpMode() {
         // Init
     arm = new Arm(hardwareMap);
+
         waitForStart();
-    
         // Pre-run
-    
         while (opModeIsActive()) {
             // TeleOp loop
 
@@ -26,14 +25,18 @@ public class ArmTest extends LinearOpMode {
                 arm.openClaw();
             }
 
-            arm.setPivotPos(gamepad1.right_trigger+.2);
-
-
-            if (gamepad1.circle) {
-                arm.setEndPos(1);
-            } else {
-                arm.setEndPos(0);
+            if (gamepad1.dpad_left) arm.grabPassthrough();
+            else if (gamepad1.dpad_up) arm.scorePassthrough();
+            else if (gamepad1.dpad_right) arm.grabSameside();
+            else if (gamepad1.dpad_down) arm.scoreSameside();
+            else {
+                arm.setPivotPos(gamepad1.right_trigger+.05);
+                arm.setEndPos(gamepad1.left_trigger);
             }
+
+            telemetry.addData("Pivot Pos", arm.getPivotPos());
+            telemetry.addData("End Pos", arm.getEndPos());
+            telemetry.update();
         }
     }
 }
