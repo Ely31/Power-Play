@@ -23,12 +23,12 @@ public class Lift {
     public static double mediumPos = 10;
     public static double highPos = 20;
 
-    public static PIDCoefficients coeffs = new PIDCoefficients(0,0,0);
-    public static double f = 0.15;
+    public static PIDCoefficients coeffs = new PIDCoefficients(0.1,0.18,0.035);
+    public static double f = 0.4;
 
     public Lift(HardwareMap hwmap){
-        left = new LinearActuator(hwmap, "leftSpool", 5.2, 5.93);
-        right = new LinearActuator(hwmap, "rightSpool", 5.2, 5.93);
+        left = new LinearActuator(hwmap, "leftSpool", 13.7, 5.93);
+        right = new LinearActuator(hwmap, "rightSpool", 13.7, 5.93);
         left.zero();
         right.zero();
 

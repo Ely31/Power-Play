@@ -2,26 +2,29 @@ package org.firstinspires.ftc.teamcode.tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.hardware.InternalPIDLift;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 
+@Disabled
 @TeleOp(name="",group="")
-public class LiftTest extends LinearOpMode {
+public class InternalPIDLiftTest extends LinearOpMode {
     // Pre-init
-    Lift lift;
+    InternalPIDLift lift;
     @Override
     public void runOpMode() {
         // Init
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        lift = new Lift(hardwareMap);
+
+        lift = new InternalPIDLift(hardwareMap);
         lift.setCoefficients(Lift.coeffs);
         waitForStart();
     
         // Pre-run
-        lift.retract();
+    
         while (opModeIsActive()) {
             // TeleOp loop
             if(gamepad1.dpad_left) lift.retract();
@@ -30,6 +33,7 @@ public class LiftTest extends LinearOpMode {
 
             lift.update();
             lift.disalayDebug(telemetry);
+            telemetry.addData("left power", lift.left.getPower());
             telemetry.update();
         }
     }

@@ -18,7 +18,7 @@ public class SignalPipelineTest extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()){
-            telemetry.addData("val1", pipeline.getAvgColor1());
+            telemetry.addData("hue", pipeline.getHue());
             telemetry.addData("park pos", pipeline.getParkPos());
             telemetry.update();
         }
