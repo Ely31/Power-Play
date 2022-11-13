@@ -29,10 +29,11 @@ public class ArmTest extends LinearOpMode {
             else if (gamepad1.dpad_up) arm.scorePassthrough();
             else if (gamepad1.dpad_right) arm.grabSameside();
             else if (gamepad1.dpad_down) arm.scoreSameside();
+           /*
             else {
                 arm.setPivotPos(gamepad1.right_trigger+.05);
                 arm.setEndPos(gamepad1.left_trigger);
-            }
+            }*/
 
             telemetry.addData("Pivot Pos", arm.getPivotPos());
             telemetry.addData("End Pos", arm.getEndPos());

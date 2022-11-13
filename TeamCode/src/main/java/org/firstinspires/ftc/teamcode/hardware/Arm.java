@@ -19,21 +19,21 @@ public class Arm {
     public static double leftOffset = -0.025;
 
     public static double pivotMax = 0.97;
-    public static double pivotMin = 0.065;
+    public static double pivotMin = 0.09;
     public static double pivotPassthroughGrabbingPos = pivotMin;
-    public static double pivotSamesideGrabbingPos = 0.9;
+    public static double pivotSamesideGrabbingPos = 0.95;
     public static double pivotScoringPos = 0.7;
-    public static double pivotLowScoringPos = 0.9;
+    public static double pivotLowScoringPos = 0.92;
 
     public static double endMin = 0;
     public static double endMax = 1;
-    public static double endPassthroughGrabbingPos = 0.1;
+    public static double endPassthroughGrabbingPos = 0.05;
     public static double endPassthroughScoringPos = 0;
     public static double endSamesideGrabbingPos = 0.7;
-    public static double endSamesideScoringPos = 0.6;
+    public static double endSamesideScoringPos = 0.65;
 
-    public static double clawClosedPos = 0.46;
-    public static double clawOpenPos = 0.25;
+    public static double clawClosedPos = 0.25;
+    public static double clawOpenPos = 0.44;
 
     public Arm(HardwareMap hwmap){
         // Hardwaremap stuff
