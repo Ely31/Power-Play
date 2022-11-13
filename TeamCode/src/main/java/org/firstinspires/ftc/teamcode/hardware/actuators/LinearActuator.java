@@ -34,12 +34,16 @@ public class LinearActuator {
     DcMotorSimple.Direction currentDirection;
     DcMotor.RunMode currentMode;
 
-    public PIDCoefficients angleCoeffs;
+    public PIDCoefficients Coeffs;
+    double fCoefficient;
     public PIDFController Controller;
     // Must call setCoefficients to use any pid features
-    public void setAngleCoefficients(PIDCoefficients coefficients) {
-        angleCoeffs = coefficients;
-        Controller = new PIDFController(angleCoeffs);
+    public void setCoefficients(PIDCoefficients coefficients) {
+        Coeffs = coefficients;
+        Controller = new PIDFController(Coeffs);
+    }
+    public void setfCoefficient(double f){
+        fCoefficient = f;
     }
 
     public void zero(){
@@ -80,7 +84,7 @@ public class LinearActuator {
         currentMode = motor.getMode();
 
         Controller.setTargetPosition(targetDistance);
-        motor.setPower(Controller.update(getCurrentAngle()));
+        motor.setPower(Controller.update(getCurrentDistance()) + fCoefficient);
     }
 
     // Position things
@@ -91,13 +95,13 @@ public class LinearActuator {
     public double getMaxDistance() {return maxDistance;}
     public  double getMinDistance() {return minDistance;}
     public double getTargetDistance() {return targetDistance;}
-    public double getCurrentAngle() {return currentPosition / TICKS_PER_INCH;}
+    public double getCurrentDistance() {return currentPosition / TICKS_PER_INCH;}
 
 
     // PID positon methods
-    public void setDistance(double angle) { // Make sure to use .setLimits before using this
+    public void setDistance(double distance) { // Make sure to use .setLimits before using this
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        targetDistance = Utility.clipValue(minDistance, maxDistance, angle);
+        targetDistance = Utility.clipValue(minDistance, maxDistance, distance);
     }
 
 
@@ -118,9 +122,9 @@ public class LinearActuator {
     public void displayDebugInfo(Telemetry telemetry) {
         // Fill up telemetry with all the info you could ever want
         // All the "%.3f" bits make things look a lot nicer by limiting the digits to 3 after the decimal point
-        telemetry.addData("Current angle", "%.3f",getCurrentAngle());
-        telemetry.addData("Target angle", "%.3f", getTargetDistance());
-        telemetry.addData("Angle error","%.3f", Controller.getLastError());
+        telemetry.addData("Current distance", "%.3f", getCurrentDistance());
+        telemetry.addData("Target distance", "%.3f", getTargetDistance());
+        telemetry.addData("distance error","%.3f", Controller.getLastError());
         telemetry.addData("Min", minDistance);
         telemetry.addData("Max", maxDistance);
         telemetry.addData("Ticks per inch", "%.3f",TICKS_PER_INCH);

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.tests;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,16 +15,24 @@ public class LiftTest extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Init
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         lift = new Lift(hardwareMap);
+        lift.setCoefficients(Lift.coeffs);
         waitForStart();
     
         // Pre-run
     
         while (opModeIsActive()) {
             // TeleOp loop
-
+            if(gamepad1.dpad_left) lift.retract();
+            else if (gamepad1.dpad_up) lift.goToMedium();
+            else if (gamepad1.dpad_right) lift.goToHigh();
 
             lift.update();
+            lift.setCoefficients(Lift.coeffs);
+            lift.disalayDebug(telemetry);
+            telemetry.update();
         }
     }
 }
