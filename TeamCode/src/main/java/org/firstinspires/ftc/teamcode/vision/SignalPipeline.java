@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import org.firstinspires.ftc.teamcode.util.Utility;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -19,6 +20,11 @@ public class SignalPipeline extends OpenCvPipeline {
     private final Point bottomRight = new Point(170, 120);
     private final Rect focusedAreaRect = new Rect(topLeft, bottomRight);
 
+    public static double perfectMagenta = 150;
+    public static double perfectGreen = 60;
+    public static double perfectBlue = 90;
+    public static double colorTolerance = 10;
+
     @Override
     public Mat processFrame(Mat input) {
 
@@ -27,6 +33,7 @@ public class SignalPipeline extends OpenCvPipeline {
         Imgproc.rectangle(displayMat, topLeft, bottomRight, new Scalar(255,0,0), 2);
 
         focusedArea = displayMat.submat(focusedAreaRect);
+        Imgproc.cvtColor(focusedArea, focusedArea, Imgproc.COLOR_RGB2HSV);
 
         averageColor = Core.mean(focusedArea);
 
@@ -34,17 +41,20 @@ public class SignalPipeline extends OpenCvPipeline {
         return displayMat;
     } // End of processFrame
 
-
+    // Methods to return useful information from the pipeline
     public Scalar getAverageColor(){
         return averageColor;
     }
-    public int getAvgColor1(){
-        return (int) averageColor.val[0];
+    public double getHue(){
+        return averageColor.val[0];
     }
-    public int getAvgColor2(){
-        return (int) averageColor.val[1];
-    }
-    public int getAvgColor3(){
-        return (int) averageColor.val[2];
+
+    // This is the only one really used from outside this class
+    public int getParkPos(){
+        int pos = 1;
+        if (Utility.withinErrorOfValue(getHue(), perfectMagenta, colorTolerance)) pos = 1;
+        if (Utility.withinErrorOfValue(getHue(), perfectGreen, colorTolerance)) pos = 2;
+        if (Utility.withinErrorOfValue(getHue(), perfectBlue, colorTolerance)) pos = 3;
+        return pos;
     }
 }

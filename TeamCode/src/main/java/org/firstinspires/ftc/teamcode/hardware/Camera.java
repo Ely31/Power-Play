@@ -7,11 +7,21 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 public class Camera {
 
     public OpenCvWebcam webcam;
+
+    public Camera(){} // Blank constructor for backwards compatability
+    public Camera(HardwareMap hwmap){
+        init(hwmap);
+    }
+    public Camera(HardwareMap hwmap, OpenCvPipeline pipeline){
+        init(hwmap);
+        setPipeline(pipeline);
+    }
 
     public void init(HardwareMap hwmap) { // Initialization of camera and pipeline
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hwmap.get(WebcamName.class, "Webcam 1"));
@@ -33,5 +43,8 @@ public class Camera {
 
     public void stopStreaming(){
         webcam.stopStreaming();
+    }
+    public void setPipeline(OpenCvPipeline pipeline){
+        webcam.setPipeline(pipeline);
     }
 }

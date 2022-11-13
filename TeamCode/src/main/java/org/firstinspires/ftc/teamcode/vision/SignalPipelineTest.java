@@ -7,20 +7,19 @@ import org.firstinspires.ftc.teamcode.hardware.Camera;
 
 @TeleOp(group = "test")
 public class SignalPipelineTest extends LinearOpMode {
-    Camera camera = new Camera();
+    Camera camera;
     SignalPipeline pipeline = new SignalPipeline();
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.setMsTransmissionInterval(100);
 
-        camera.init(hardwareMap);
-        camera.webcam.setPipeline(pipeline);
-
+        camera = new Camera(hardwareMap, pipeline);
 
         waitForStart();
         while (opModeIsActive()){
             telemetry.addData("val1", pipeline.getAvgColor1());
+            telemetry.addData("park pos", pipeline.getParkPos());
             telemetry.update();
         }
     }
