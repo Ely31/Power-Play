@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Arm;
 
-@TeleOp(name="",group="")
+@TeleOp(name="",group="test")
 public class ArmTest extends LinearOpMode {
     // Pre-init
     Arm arm;

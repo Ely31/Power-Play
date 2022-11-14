@@ -46,8 +46,8 @@ public class DriveConstants {
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
     public static double WHEEL_RADIUS = 1.8898; // in
-    public static double GEAR_RATIO = 1.041667; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 11; // in
+    public static double GEAR_RATIO = 1.2273; // output (wheel) speed / input (motor) speed
+    public static double TRACK_WIDTH = 12; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -87,9 +87,11 @@ public class DriveConstants {
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
      
      */
-    public static double MAX_VEL = 55; // actually a little over 60
-    public static double MAX_ACCEL = 30;
-    public static double MAX_ANG_VEL = Math.toRadians(170);
+
+    // These have been toned down a lot
+    public static double MAX_VEL = 45;
+    public static double MAX_ACCEL = 25;
+    public static double MAX_ANG_VEL = Math.toRadians(120);
     public static double MAX_ANG_ACCEL = Math.toRadians(120);
 
 

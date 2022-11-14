@@ -1,13 +1,16 @@
 package org.firstinspires.ftc.teamcode.tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.sensors.RevDistanceSensor;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 
-@Autonomous(name="",group="")
+@Disabled
+@TeleOp(name="",group="test")
 public class DistanceSensorTest extends LinearOpMode {
     // Pre-init
     RevDistanceSensor sensor;

@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.actuators.PIDActuator;
 
-@TeleOp
+@TeleOp(group = "test")
 public class PIDActuatorTest extends LinearOpMode {
     PIDActuator actuator;
     @Override

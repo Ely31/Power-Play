@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 
-@TeleOp(name="",group="")
+@TeleOp(name="",group="test")
 public class LiftTest extends LinearOpMode {
     // Pre-init
     Lift lift;

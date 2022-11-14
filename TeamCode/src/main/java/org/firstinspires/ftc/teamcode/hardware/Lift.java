@@ -31,11 +31,11 @@ public class Lift {
         right = new LinearActuator(hwmap, "rightSpool", 13.7, 5.93);
         left.zero();
         right.zero();
-
         left.setLimits(minHeight, maxHeight);
         right.setLimits(minHeight, maxHeight);
-
         right.setReversed();
+
+        setCoefficients(coeffs);
     }
 
     public void setCoefficients(PIDCoefficients coeffs){
@@ -63,6 +63,7 @@ public class Lift {
     public void goToHigh(){
         setHeight(highPos);
     }
+
     public void goToJunction(int junction){
         switch (junction){
             case 0:

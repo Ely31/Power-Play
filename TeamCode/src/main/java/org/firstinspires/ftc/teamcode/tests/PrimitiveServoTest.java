@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@TeleOp(name="",group="")
+@TeleOp(name="",group="test")
 public class PrimitiveServoTest extends LinearOpMode {
     // Pre-init
     Servo servo;

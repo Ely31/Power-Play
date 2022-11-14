@@ -7,7 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Disabled
-@Autonomous
+@Autonomous(group = "test")
 public class rrTest extends LinearOpMode {
     SampleMecanumDrive drive;
     TrajectorySequence test;

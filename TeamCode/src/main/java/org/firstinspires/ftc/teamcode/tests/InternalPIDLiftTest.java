@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.InternalPIDLift;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 
 @Disabled
-@TeleOp(name="",group="")
+@TeleOp(name="",group="test")
 public class InternalPIDLiftTest extends LinearOpMode {
     // Pre-init
     InternalPIDLift lift;

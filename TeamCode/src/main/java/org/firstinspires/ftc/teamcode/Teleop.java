@@ -53,37 +53,9 @@ public class Teleop extends LinearOpMode {
             // Send signals to drivers when endgame approaches
             timeUtil.update(timer.milliseconds());
             timeUtil.updateGamepads(gamepad1, gamepad2);
-
+            // Drive
             drive.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.right_trigger);
             if (gamepad1.back) drive.resetHeading();
-
-            // ARM AND LIFT CONTROL
-            // Rising edge detector controlling a toggle
-            if (gamepad2.share && !prevCyclingModeInput){
-                arm.setMode(!arm.getMode());
-            }
-            prevCyclingModeInput = gamepad2.share;
-
-            // Rising edge detector controlling a toggle
-            if ((gamepad1.left_trigger > 0) && !prevExtendedInput){
-                extended = !extended;
-            }
-            prevExtendedInput = (gamepad1.left_trigger > 0);
-
-            // Do stuff with those variables we just toggled
-            if (extended){
-                lift.goToJunction(activeJunction);
-                arm.goToScore(); // The action of this method depends on the value of "mode" in the arm class
-            } else {
-                lift.retract();
-                arm.goToGrab(); // Similar behavior to "goToScore"
-            }
-
-            // Switch active junction using the D-Pad
-            if (gamepad2.dpad_down) activeJunction = 0;
-            if (gamepad2.dpad_left) activeJunction = 1;
-            if (gamepad2.dpad_up) activeJunction = 2;
-            if (gamepad2.dpad_right) activeJunction = 3;
 
             // CLAW CONTROL
             // Rising edge detector controlling a toggle
@@ -91,6 +63,40 @@ public class Teleop extends LinearOpMode {
                 clawState = !clawState;
             }
             prevClawInput = gamepad1.left_bumper;
+
+            if (clawState) arm.closeClaw();
+            else arm.openClaw();
+
+
+            // ARM AND LIFT CONTROL
+            // Rising edge detector controlling a toggle for cycling mode (sameside and passthrough)
+            if (gamepad2.share && !prevCyclingModeInput){
+                arm.setMode(!arm.getMode());
+            }
+            prevCyclingModeInput = gamepad2.share;
+
+            // Rising edge detector controlling a toggle for the extended state
+            if ((gamepad1.left_trigger > 0) && !prevExtendedInput){
+                extended = !extended;
+            }
+            prevExtendedInput = (gamepad1.left_trigger > 0);
+
+            // Switch active junction using the D-Pad
+            if (gamepad2.dpad_down) activeJunction = 0;
+            if (gamepad2.dpad_left) activeJunction = 1;
+            if (gamepad2.dpad_up) activeJunction = 2;
+            if (gamepad2.dpad_right) activeJunction = 3;
+
+            // Do stuff with those variables we just changed
+            if (extended){
+                lift.goToJunction(activeJunction);
+                arm.goToScore(); // The action of this method depends on the value of "mode" in the arm class
+            } else {
+                lift.retract();
+                arm.goToGrab(); // Similar behavior to "goToScore"
+            }
+            // Make the lift move
+            lift.update();
 
             // Print telemetry if we want to
             if (debug) {
