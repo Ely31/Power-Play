@@ -32,7 +32,7 @@ public class Arm {
     public static double endSamesideGrabbingPos = 0.7;
     public static double endSamesideScoringPos = 0.65;
 
-    public static double clawClosedPos = 0.25;
+    public static double clawClosedPos = 0.22;
     public static double clawOpenPos = 0.44;
 
     public Arm(HardwareMap hwmap){

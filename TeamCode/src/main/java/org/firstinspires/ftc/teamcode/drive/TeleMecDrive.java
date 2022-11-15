@@ -111,7 +111,7 @@ public class TeleMecDrive {
 
         slowInput = ((-1 + slowFactor) * slowInput)+1;
 
-        heading = -(imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading-Math.toRadians(90 * AutoToTele.allianceSide)) + headingOffset);
+        heading = -((imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading-Math.toRadians(90 * AutoToTele.allianceSide)) + headingOffset) + Math.toRadians(180));
 
         rotX = x * Math.cos(heading) - -y * Math.sin(heading);
         rotY = x * Math.sin(heading) + -y * Math.cos(heading);

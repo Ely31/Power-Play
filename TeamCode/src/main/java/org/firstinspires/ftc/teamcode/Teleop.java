@@ -40,10 +40,9 @@ public class Teleop extends LinearOpMode {
     @Override
     public void runOpMode(){
         // Init
-        PhotonCore.enable();
         telemetry.setMsTransmissionInterval(100);
         // Bind hardware to the hardwaremap
-        drive = new TeleMecDrive(hardwareMap, 0.4);
+        drive = new TeleMecDrive(hardwareMap, 0.15);
         arm = new Arm(hardwareMap);
         lift  = new Lift(hardwareMap);
 
@@ -55,7 +54,7 @@ public class Teleop extends LinearOpMode {
             timeUtil.updateGamepads(gamepad1, gamepad2);
             // Drive
             drive.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.right_trigger);
-            if (gamepad1.back) drive.resetHeading();
+            if (gamepad1.share) drive.resetHeading();
 
             // CLAW CONTROL
             // Rising edge detector controlling a toggle
