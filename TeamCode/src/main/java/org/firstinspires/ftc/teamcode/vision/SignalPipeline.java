@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.teamcode.util.Utility;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -9,6 +11,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+@Config
 public class SignalPipeline extends OpenCvPipeline {
 
     private Mat focusedArea = new Mat();
@@ -16,14 +19,14 @@ public class SignalPipeline extends OpenCvPipeline {
 
     private Scalar averageColor = new Scalar(255,0,0);
 
-    private final Point topLeft = new Point(150, 100);
-    private final Point bottomRight = new Point(170, 120);
-    private final Rect focusedAreaRect = new Rect(topLeft, bottomRight);
+    public static Point topLeft = new Point(150, 50);
+    public static Point bottomRight = new Point(170, 100);
+    public static Rect focusedAreaRect = new Rect(topLeft, bottomRight);
 
-    public static double perfectMagenta = 150;
-    public static double perfectGreen = 60;
-    public static double perfectBlue = 90;
-    public static double colorTolerance = 10;
+    public static double perfectMagenta = 135;
+    public static double perfectGreen = 50;
+    public static double perfectBlue = 83;
+    public static double colorTolerance = 15;
 
     @Override
     public Mat processFrame(Mat input) {
@@ -42,9 +45,6 @@ public class SignalPipeline extends OpenCvPipeline {
     } // End of processFrame
 
     // Methods to return useful information from the pipeline
-    public Scalar getAverageColor(){
-        return averageColor;
-    }
     public double getHue(){
         return averageColor.val[0];
     }

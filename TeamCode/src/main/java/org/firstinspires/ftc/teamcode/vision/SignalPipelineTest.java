@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.vision;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Camera;
 
-@TeleOp(group = "test")
+@Autonomous(group = "test")
 public class SignalPipelineTest extends LinearOpMode {
     Camera camera;
     SignalPipeline pipeline = new SignalPipeline();
@@ -15,6 +16,7 @@ public class SignalPipelineTest extends LinearOpMode {
         telemetry.setMsTransmissionInterval(100);
 
         camera = new Camera(hardwareMap, pipeline);
+        FtcDashboard.getInstance().startCameraStream(camera.webcam, 1);
 
         waitForStart();
         while (opModeIsActive()){
