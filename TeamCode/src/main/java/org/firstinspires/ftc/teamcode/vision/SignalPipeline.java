@@ -17,7 +17,7 @@ public class SignalPipeline extends OpenCvPipeline {
     private Mat focusedArea = new Mat();
     private Mat displayMat = new Mat();
 
-    private Scalar averageColor = new Scalar(255,0,0);
+    private Scalar averageColor = new Scalar(135,0,0);
 
     public static Point topLeft = new Point(150, 50);
     public static Point bottomRight = new Point(170, 100);
@@ -39,7 +39,6 @@ public class SignalPipeline extends OpenCvPipeline {
         Imgproc.cvtColor(focusedArea, focusedArea, Imgproc.COLOR_RGB2HSV);
 
         averageColor = Core.mean(focusedArea);
-
 
         return displayMat;
     } // End of processFrame

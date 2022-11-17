@@ -30,7 +30,7 @@ public class Arm {
     public static double endPassthroughGrabbingPos = 0.05;
     public static double endPassthroughScoringPos = 0;
     public static double endSamesideGrabbingPos = 0.7;
-    public static double endSamesideScoringPos = 0.67;
+    public static double endSamesideScoringPos = 0.69;
 
     public static double clawClosedPos = 0.22;
     public static double clawOpenPos = 0.45;
@@ -47,6 +47,7 @@ public class Arm {
 
         // Warning: Robot moves on intitialization
         grabPassthrough();
+        openClaw();
     }
 
     // Methods for controlling each dof
@@ -123,3 +124,5 @@ public class Arm {
         else scoreGroundSameside();
     }
 }
+
+

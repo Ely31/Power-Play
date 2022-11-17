@@ -51,6 +51,9 @@ public class Lift {
         left.setDistance(height);
         right.setDistance(height);
     }
+    public double getHeight(){
+        return ((left.getCurrentDistance() + right.getCurrentDistance()) / 2);
+    }
     public void retract(){
         setHeight(retractedPos);
     }
