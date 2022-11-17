@@ -19,11 +19,11 @@ public class Lift {
 
     public static double retractedPos = 0;
     public static double groundPos = 0;
-    public static double lowPos = 0;
-    public static double mediumPos = 10;
-    public static double highPos = 20;
+    public static double lowPos = 5;
+    public static double mediumPos = 15;
+    public static double highPos = 25.5;
 
-    public static PIDCoefficients coeffs = new PIDCoefficients(0.32,0.08,0.035);
+    public static PIDCoefficients coeffs = new PIDCoefficients(0.3,0.08,0.035);
     public static double f = 0.4;
 
     public Lift(HardwareMap hwmap){
@@ -54,6 +54,9 @@ public class Lift {
     public void retract(){
         setHeight(retractedPos);
     }
+    public void goToGround(){
+        setHeight(groundPos);
+    }
     public void goToLow(){
         setHeight(lowPos);
     }
@@ -67,7 +70,7 @@ public class Lift {
     public void goToJunction(int junction){
         switch (junction){
             case 0:
-                retract();
+                goToGround();
                 break;
             case 1:
                 goToLow();
@@ -77,6 +80,23 @@ public class Lift {
                 break;
             case 3:
                 goToHigh();
+                break;
+        }
+    }
+
+    public void editCurrentPos(int posToedit, double step){
+        switch (posToedit){
+            case 0:
+                groundPos += step;
+                break;
+            case 1:
+                lowPos += step;
+                break;
+            case 2:
+                mediumPos += step;
+                break;
+            case 3:
+                highPos += step;
                 break;
         }
     }

@@ -34,8 +34,10 @@ public class Teleop extends LinearOpMode {
     boolean prevExtendedInput = false;
 
     int activeJunction = 2; // 0,1,2,3 is ground, low, medium, and high respectively
+    public static double posEditStep = 0.1;
 
     public static boolean debug = true;
+    public static boolean instructionsOn = false;
 
     @Override
     public void runOpMode(){
@@ -85,6 +87,10 @@ public class Teleop extends LinearOpMode {
             if (gamepad2.dpad_left) activeJunction = 1;
             if (gamepad2.dpad_up) activeJunction = 2;
             if (gamepad2.dpad_right) activeJunction = 3;
+
+            // Edit the current level with triangle and cross
+            if (gamepad2.triangle) lift.editCurrentPos(activeJunction, posEditStep);
+            if (gamepad2.cross) lift.editCurrentPos(activeJunction, -posEditStep);
 
             // Do stuff with those variables we just changed
             if (extended){
