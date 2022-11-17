@@ -23,14 +23,14 @@ public class Arm {
     public static double pivotPassthroughGrabbingPos = pivotMin;
     public static double pivotSamesideGrabbingPos = 0.95;
     public static double pivotScoringPos = 0.7;
-    public static double pivotLowScoringPos = 0.92;
+    public static double pivotGroundScoringPos = 0.92;
 
     public static double endMin = 0;
     public static double endMax = 1;
     public static double endPassthroughGrabbingPos = 0.05;
     public static double endPassthroughScoringPos = 0;
     public static double endSamesideGrabbingPos = 0.7;
-    public static double endSamesideScoringPos = 0.65;
+    public static double endSamesideScoringPos = 0.67;
 
     public static double clawClosedPos = 0.22;
     public static double clawOpenPos = 0.45;
@@ -93,6 +93,14 @@ public class Arm {
         setPivotPos(pivotScoringPos);
         setEndPos(endSamesideScoringPos);
     }
+    public void scoreGroundPassthrough() {
+        setPivotPos(pivotGroundScoringPos);
+        setEndPos(endPassthroughScoringPos);
+    }
+    public void scoreGroundSameside() {
+        setPivotPos(pivotGroundScoringPos);
+        setEndPos(endSamesideScoringPos);
+    }
 
     // Use two modes to switch between passthrough and sameside strategies
     public void setMode(boolean mode){
@@ -109,5 +117,9 @@ public class Arm {
     public void goToScore(){
         if (mode) scorePassthrough();
         else scoreSameside();
+    }
+    public void goToScoreGround(){
+        if (mode) scoreGroundPassthrough();
+        else scoreGroundSameside();
     }
 }

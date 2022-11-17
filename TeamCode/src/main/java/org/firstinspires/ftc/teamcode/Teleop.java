@@ -35,6 +35,7 @@ public class Teleop extends LinearOpMode {
 
     int activeJunction = 2; // 0,1,2,3 is ground, low, medium, and high respectively
     public static double posEditStep = 0.1;
+    public static double retractedPosEditStep = 0.07;
 
     public static boolean debug = true;
     public static boolean instructionsOn = false;
@@ -55,7 +56,7 @@ public class Teleop extends LinearOpMode {
             timeUtil.update(timer.milliseconds());
             timeUtil.updateGamepads(gamepad1, gamepad2);
             // Drive
-            drive.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.right_trigger);
+            drive.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x * 0.7, gamepad1.right_trigger);
             if (gamepad1.share) drive.resetHeading();
 
             // CLAW CONTROL
@@ -82,20 +83,30 @@ public class Teleop extends LinearOpMode {
             }
             prevExtendedInput = (gamepad1.left_trigger > 0);
 
-            // Switch active junction using the D-Pad
-            if (gamepad2.dpad_down) activeJunction = 0;
-            if (gamepad2.dpad_left) activeJunction = 1;
-            if (gamepad2.dpad_up) activeJunction = 2;
-            if (gamepad2.dpad_right) activeJunction = 3;
+            // Switch active junction using the four buttons on gamepad one
+            if (gamepad1.cross) activeJunction = 0;
+            if (gamepad1.square) activeJunction = 1;
+            if (gamepad1.triangle) activeJunction = 2;
+            if (gamepad1.circle) activeJunction = 3;
 
-            // Edit the current level with triangle and cross
-            if (gamepad2.triangle) lift.editCurrentPos(activeJunction, posEditStep);
-            if (gamepad2.cross) lift.editCurrentPos(activeJunction, -posEditStep);
+            // Edit the current level with the dpad on gamepad two
+            if (gamepad2.dpad_up) lift.editCurrentPos(activeJunction, posEditStep);
+            if (gamepad2.dpad_down) lift.editCurrentPos(activeJunction, -posEditStep);
+
+            // Edit retracted pos for grabbing off the stack (this may be a scuffed way of doing it but comp is in two days)
+            if (gamepad2.triangle) lift.editRetractedPos(retractedPosEditStep);
+            if (gamepad2.cross) lift.editRetractedPos(-retractedPosEditStep);
+
+            if (arm.getMode()) lift.resetRetractedPos();
 
             // Do stuff with those variables we just changed
             if (extended){
                 lift.goToJunction(activeJunction);
-                arm.goToScore(); // The action of this method depends on the value of "mode" in the arm class
+                // Have a special case for the gronud junction
+                if (activeJunction == 0){
+                    arm.goToScoreGround();
+                } else arm.goToScore(); // The action of this method depends on the value of "mode" in the arm class
+
             } else {
                 lift.retract();
                 arm.goToGrab(); // Similar behavior to "goToScore"

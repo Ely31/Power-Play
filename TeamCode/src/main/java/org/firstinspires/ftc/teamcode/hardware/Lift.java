@@ -18,7 +18,7 @@ public class Lift {
     public static double minHeight = 0;
 
     public static double retractedPos = 0;
-    public static double groundPos = 0;
+    public static double groundPos = 1;
     public static double lowPos = 5;
     public static double mediumPos = 15;
     public static double highPos = 25.5;
@@ -99,6 +99,12 @@ public class Lift {
                 highPos += step;
                 break;
         }
+    }
+    public void editRetractedPos(double step){
+        retractedPos += step;
+    }
+    public void resetRetractedPos(){
+        retractedPos = 0;
     }
 
     public void update(){
