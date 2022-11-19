@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.outoftheboxrobotics.photoncore.PhotonCore;
@@ -19,7 +20,7 @@ import org.firstinspires.ftc.teamcode.vision.SignalPipeline;
 
 //this autonomous is meant for if you start on the left side of the field
 //regular is the red side of the field, -1 is blue side of the field
-//@Disabled
+@Config
 @Autonomous
 public class LeftAuto extends LinearOpMode {
     // Pre init
@@ -30,7 +31,7 @@ public class LeftAuto extends LinearOpMode {
     Lift lift;
 
     int side = 1;
-    int activeparkzone = 1;
+    public static int activeparkzone = 1;
 
     final double originToWall = 141.0/2.0;
     final double wallDistance = originToWall - 6.5;
@@ -83,30 +84,29 @@ public class LeftAuto extends LinearOpMode {
                 switch(activeparkzone){
                     case 1:
                         activeparkzone = 1;
-                        parkPos = new Pose2d(-58.5, -33.0*side);
+                        parkPos = new Pose2d(-58.5, -32*side, Math.toRadians(-90*side));
                         break;
                     case 2:
                         activeparkzone = 2;
-                        parkPos = new Pose2d(-36, -33*side);
+                        parkPos = new Pose2d(-36, -32*side, Math.toRadians(-90*side));
                         break;
                     case 3:
                         activeparkzone = 3;
-                        parkPos = new Pose2d(-14, -33*side);
+                        parkPos = new Pose2d(-11, -32*side, Math.toRadians(-90*side));
                         break;
                 }
 
                 // Update trajectories
-                preloadScoringPos = new Pose2d(-8, -42*side, Math.toRadians(-112*side));
+                preloadScoringPos = new Pose2d(-10, -32.5*side, Math.toRadians(-135*side));
 
                 driveToScoringPos = drive.trajectorySequenceBuilder(startPos)
-                        .back(1.5)
-                        .lineToSplineHeading(new Pose2d(-8, -57*side,Math.toRadians(0*side)))
+                        .back(2.5)
+                        .lineToSplineHeading(new Pose2d(-10, -56*side,Math.toRadians(-90*side)))
                         .lineToSplineHeading(preloadScoringPos)
                         .build();
 
 
                 park = drive.trajectorySequenceBuilder(driveToScoringPos.end())
-                        .lineToSplineHeading(new Pose2d(-8, -33.9*side,Math.toRadians(0*side)))
                         .lineToSplineHeading(parkPos)
                         .build();
 
@@ -127,6 +127,7 @@ public class LeftAuto extends LinearOpMode {
             // Auto code
             arm.closeClaw();
             sleep(500);
+            //lift.setHeight(1); // So the cone doesn't drag on the ground
             drive.followTrajectorySequence(driveToScoringPos);
 
             // While it isn't finished scoring, run an FSM
