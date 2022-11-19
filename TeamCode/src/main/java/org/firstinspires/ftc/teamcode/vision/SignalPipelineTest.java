@@ -16,7 +16,7 @@ public class SignalPipelineTest extends LinearOpMode {
         telemetry.setMsTransmissionInterval(100);
 
         camera = new Camera(hardwareMap, pipeline);
-        FtcDashboard.getInstance().startCameraStream(camera.webcam, 1);
+        FtcDashboard.getInstance().startCameraStream(camera.webcam, 3);
 
         waitForStart();
         while (opModeIsActive()){

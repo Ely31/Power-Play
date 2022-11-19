@@ -19,8 +19,8 @@ public class SignalPipeline extends OpenCvPipeline {
 
     private int averageColor = 135;
 
-    public static Point topLeft = new Point(150, 50);
-    public static Point bottomRight = new Point(170, 100);
+    public static Point topLeft = new Point(150, 0);
+    public static Point bottomRight = new Point(170, 45);
     public static Rect focusedAreaRect = new Rect(topLeft, bottomRight);
 
     public static double perfectMagenta = 135;

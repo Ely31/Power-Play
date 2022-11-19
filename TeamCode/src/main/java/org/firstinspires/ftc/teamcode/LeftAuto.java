@@ -25,16 +25,13 @@ import org.firstinspires.ftc.teamcode.vision.SignalPipeline;
 public class LeftAuto extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
-    SignalPipeline signalPipeline;
     Camera camera;
+    SignalPipeline signalPipeline = new SignalPipeline();
     Arm arm;
     Lift lift;
 
     int side = 1;
     public static int activeparkzone = 1;
-
-    final double originToWall = 141.0/2.0;
-    final double wallDistance = originToWall - 6.5;
 
     Pose2d startPos = new Pose2d(-35.8, -60.6* side, Math.toRadians(-90*side));
     Pose2d parkPos;
@@ -62,7 +59,7 @@ public class LeftAuto extends LinearOpMode {
         arm = new Arm(hardwareMap);
         lift = new Lift(hardwareMap);
         camera = new Camera(hardwareMap, signalPipeline);
-        FtcDashboard.getInstance().startCameraStream(camera.webcam, 1);
+        FtcDashboard.getInstance().startCameraStream(camera.webcam, 3);
 
         ElapsedTime pipelineThrottle = new ElapsedTime();
         ElapsedTime scoringWait = new ElapsedTime();
@@ -80,8 +77,7 @@ public class LeftAuto extends LinearOpMode {
                 drive.setPoseEstimate(startPos);
 
                 // Should be switching pipeline.getParkPos, but just testing now
-
-                switch(activeparkzone){
+                switch(signalPipeline.getParkPos()){
                     case 1:
                         activeparkzone = 1;
                         parkPos = new Pose2d(-58.5, -32*side, Math.toRadians(-90*side));
