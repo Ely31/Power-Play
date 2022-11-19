@@ -75,7 +75,7 @@ public class LeftAuto extends LinearOpMode {
             // Recompute trajectories every second
             if (pipelineThrottle.milliseconds() > 1000){
 
-                startPos = new Pose2d(-35.8, -60.6* side, Math.toRadians(-90*side));
+                startPos = new Pose2d(-35.8, -60.6*side, Math.toRadians(-90*side));
                 drive.setPoseEstimate(startPos);
 
                 // Should be switching pipeline.getParkPos, but just testing now
@@ -83,27 +83,30 @@ public class LeftAuto extends LinearOpMode {
                 switch(activeparkzone){
                     case 1:
                         activeparkzone = 1;
-                        parkPos = new Pose2d(-58.5, -33.0* side);
+                        parkPos = new Pose2d(-58.5, -33.0*side);
                         break;
                     case 2:
                         activeparkzone = 2;
-                        parkPos = new Pose2d(-36, -33* side);
+                        parkPos = new Pose2d(-36, -33*side);
                         break;
                     case 3:
                         activeparkzone = 3;
-                        parkPos = new Pose2d(-14, -33* side);
+                        parkPos = new Pose2d(-14, -33*side);
                         break;
                 }
 
                 // Update trajectories
+                preloadScoringPos = new Pose2d(-8, -42*side, Math.toRadians(-112*side));
+
                 driveToScoringPos = drive.trajectorySequenceBuilder(startPos)
-                        .lineToSplineHeading(new Pose2d(-10.5, -58.7* side,Math.toRadians(0)))
+                        .back(1.5)
+                        .lineToSplineHeading(new Pose2d(-8, -57*side,Math.toRadians(0*side)))
                         .lineToSplineHeading(preloadScoringPos)
                         .build();
 
 
                 park = drive.trajectorySequenceBuilder(driveToScoringPos.end())
-                        .lineToSplineHeading(new Pose2d(-12.8, -33.9 * side,Math.toRadians(0*side)))
+                        .lineToSplineHeading(new Pose2d(-8, -33.9*side,Math.toRadians(0*side)))
                         .lineToSplineHeading(parkPos)
                         .build();
 
@@ -133,21 +136,21 @@ public class LeftAuto extends LinearOpMode {
                         lift.goToHigh();
                         // Move on if the lift is all the way up
                         if (Utility.withinErrorOfValue(lift.getHeight(), Lift.highPos, 0.5)) {
-                            //arm.scorePassthrough();
+                            arm.scorePassthrough();
                             scoringWait.reset();
                             currentScoringState = ScoringState.WAIT;
                         }
                         break;
                     case WAIT:
                         if (scoringWait.seconds() > 2){
-                            //arm.openClaw();
-                            //arm.grabPassthrough();
+                            arm.openClaw();
                             scoringWait.reset();
                             currentScoringState = ScoringState.WAIT2;
                         }
                         break;
                     case WAIT2:
                         if (scoringWait.seconds() > 2){
+                            arm.grabPassthrough();
                             currentScoringState = ScoringState.RETRACTING;
                         }
                         break;

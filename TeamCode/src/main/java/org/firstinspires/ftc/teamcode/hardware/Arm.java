@@ -16,14 +16,14 @@ public class Arm {
     boolean mode = true; // True is passthrough, false is sameside
 
     // Constants
-    public static double leftOffset = -0.025;
+    public static double leftOffset = -0.08;
 
-    public static double pivotMax = 0.97;
+    public static double pivotMax = 1;
     public static double pivotMin = 0.09;
     public static double pivotPassthroughGrabbingPos = pivotMin;
     public static double pivotSamesideGrabbingPos = 0.95;
-    public static double pivotScoringPos = 0.7;
-    public static double pivotGroundScoringPos = 0.92;
+    public static double pivotScoringPos = 1;
+    public static double pivotGroundScoringPos = 1;
 
     public static double endMin = 0;
     public static double endMax = 1;

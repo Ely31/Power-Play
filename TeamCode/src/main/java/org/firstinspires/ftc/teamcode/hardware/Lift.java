@@ -18,10 +18,10 @@ public class Lift {
     public static double minHeight = 0;
 
     public static double retractedPos = 0;
-    public static double groundPos = 1;
-    public static double lowPos = 5;
-    public static double mediumPos = 15;
-    public static double highPos = 25.5;
+    public static double groundPos = 0;
+    public static double lowPos = 1;
+    public static double mediumPos = 12;
+    public static double highPos = 21;
 
     public static PIDCoefficients coeffs = new PIDCoefficients(0.3,0.08,0.035);
     public static double f = 0.4;
