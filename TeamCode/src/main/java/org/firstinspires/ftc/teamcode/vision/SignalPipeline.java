@@ -19,13 +19,13 @@ public class SignalPipeline extends OpenCvPipeline {
 
     private int averageColor = 135;
 
-    public static Point topLeft = new Point(150, 0);
-    public static Point bottomRight = new Point(170, 45);
+    public static Point topLeft = new Point(153, 0);
+    public static Point bottomRight = new Point(167, 45);
     public static Rect focusedAreaRect = new Rect(topLeft, bottomRight);
 
-    public static double perfectMagenta = 135;
-    public static double perfectGreen = 50;
-    public static double perfectBlue = 83;
+    public static double perfectMagenta = 131;
+    public static double perfectGreen = 48;
+    public static double perfectBlue = 82;
     public static double colorTolerance = 15;
 
     @Override

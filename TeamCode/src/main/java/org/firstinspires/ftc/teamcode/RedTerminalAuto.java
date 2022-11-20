@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.vision.SignalPipeline;
 //regular is the red side of the field, -1 is blue side of the field
 @Config
 @Autonomous
-public class LeftAuto extends LinearOpMode {
+public class RedTerminalAuto extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
     Camera camera;

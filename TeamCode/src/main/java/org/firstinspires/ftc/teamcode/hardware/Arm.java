@@ -21,18 +21,18 @@ public class Arm {
     public static double pivotMax = 1;
     public static double pivotMin = 0.09;
     public static double pivotPassthroughGrabbingPos = pivotMin;
-    public static double pivotSamesideGrabbingPos = 0.95;
+    public static double pivotSamesideGrabbingPos = pivotPassthroughGrabbingPos; // Scuffed hack at the tournament
     public static double pivotScoringPos = 1;
     public static double pivotGroundScoringPos = 1;
 
     public static double endMin = 0;
     public static double endMax = 1;
-    public static double endPassthroughGrabbingPos = 0.05;
-    public static double endPassthroughScoringPos = 0;
+    public static double endPassthroughGrabbingPos = 0.45;
+    public static double endPassthroughScoringPos = 0.43;
     public static double endSamesideGrabbingPos = 0.7;
-    public static double endSamesideScoringPos = 0.69;
+    public static double endSamesideScoringPos = 0;
 
-    public static double clawClosedPos = 0.22;
+    public static double clawClosedPos = 0.2;
     public static double clawOpenPos = 0.45;
 
     public Arm(HardwareMap hwmap){

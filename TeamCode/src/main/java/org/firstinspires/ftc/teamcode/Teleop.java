@@ -34,7 +34,7 @@ public class Teleop extends LinearOpMode {
     boolean prevExtendedInput = false;
 
     int activeJunction = 2; // 0,1,2,3 is ground, low, medium, and high respectively
-    public static double posEditStep = 0.1;
+    public static double posEditStep = 0.15;
     public static double retractedPosEditStep = 0.07;
 
     public static boolean debug = true;
@@ -45,7 +45,7 @@ public class Teleop extends LinearOpMode {
         // Init
         telemetry.setMsTransmissionInterval(100);
         // Bind hardware to the hardwaremap
-        drive = new TeleMecDrive(hardwareMap, 0.15);
+        drive = new TeleMecDrive(hardwareMap, 0.2);
         arm = new Arm(hardwareMap);
         lift  = new Lift(hardwareMap);
 
@@ -56,7 +56,7 @@ public class Teleop extends LinearOpMode {
             timeUtil.update(timer.milliseconds());
             timeUtil.updateGamepads(gamepad1, gamepad2);
             // Drive
-            drive.driveFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x * 0.7, gamepad1.right_trigger);
+            drive.driveFieldCentric(gamepad1.left_stick_x * 0.4, gamepad1.left_stick_y * 0.4, gamepad1.right_stick_x * 0.7, gamepad1.right_trigger);
             if (gamepad1.share) drive.resetHeading();
 
             // CLAW CONTROL
