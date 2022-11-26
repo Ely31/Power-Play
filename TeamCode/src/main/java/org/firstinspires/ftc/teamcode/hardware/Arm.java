@@ -4,6 +4,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Teleop;
 import org.firstinspires.ftc.teamcode.util.Utility;
 
 @Config
@@ -122,6 +124,14 @@ public class Arm {
     public void goToScoreGround(){
         if (mode) scoreGroundPassthrough();
         else scoreGroundSameside();
+    }
+
+    public void displayDebug(Telemetry telemetry){
+        telemetry.addData("Left pivot",leftPivot.getPosition());
+        telemetry.addData("Right pivot",rightPivot.getPosition());
+        telemetry.addData("End",end.getPosition());
+        telemetry.addData("Claw",claw.getPosition());
+        telemetry.addData("Mode",mode);
     }
 }
 
