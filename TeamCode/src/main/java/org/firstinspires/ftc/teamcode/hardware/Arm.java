@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Teleop;
 import org.firstinspires.ftc.teamcode.util.Utility;
 
 @Config
@@ -16,6 +15,7 @@ public class Arm {
     Servo claw;
 
     boolean mode = true; // True is passthrough, false is sameside
+    boolean clawState = false;
 
     // Constants
     public static double leftOffset = -0.08;
@@ -58,6 +58,13 @@ public class Arm {
     }
     public void closeClaw(){
         claw.setPosition(clawClosedPos);
+    }
+
+    public void setClawState(boolean state){
+        clawState = state;
+    }
+    public boolean getClawState(){
+        return clawState;
     }
 
     public void setPivotPos(double pos){
@@ -124,6 +131,11 @@ public class Arm {
     public void goToScoreGround(){
         if (mode) scoreGroundPassthrough();
         else scoreGroundSameside();
+    }
+
+    public void update(){
+        if (clawState) openClaw();
+        else closeClaw();
     }
 
     public void displayDebug(Telemetry telemetry){

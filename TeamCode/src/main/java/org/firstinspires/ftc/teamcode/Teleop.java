@@ -60,32 +60,28 @@ public class Teleop extends LinearOpMode {
             drive.driveFieldCentric(
                     gamepad1.left_stick_x * drivingSpeedMultiplier,
                     gamepad1.left_stick_y * drivingSpeedMultiplier,
-                    gamepad1.right_stick_x * drivingSpeedMultiplier,
+                    gamepad1.right_stick_x * drivingSpeedMultiplier * 0.7,
                     gamepad1.right_trigger);
             if (gamepad1.share) drive.resetHeading();
 
             // CLAW CONTROL
             // Rising edge detector controlling a toggle
             if (gamepad1.left_bumper && !prevClawInput){
-                clawState = !clawState;
+                arm.setClawState(!arm.getClawState());
             }
             prevClawInput = gamepad1.left_bumper;
 
-            if (clawState) arm.closeClaw();
-            else arm.openClaw();
-
 
             // ARM AND LIFT CONTROL
+            // Edit things
             // Switch active junction using the four buttons on gamepad one
             if (gamepad1.cross) activeJunction = 0;
             if (gamepad1.square) activeJunction = 1;
             if (gamepad1.triangle) activeJunction = 2;
             if (gamepad1.circle) activeJunction = 3;
-
             // Edit the current level with the dpad on gamepad two
             if (gamepad2.dpad_up) lift.editCurrentPos(activeJunction, posEditStep);
             if (gamepad2.dpad_down) lift.editCurrentPos(activeJunction, -posEditStep);
-
             // Edit retracted pos for grabbing off the stack (this may be a scuffed way of doing it but comp is in two days)
             if (gamepad2.triangle) lift.editRetractedPos(retractedPosEditStep);
             if (gamepad2.cross) lift.editRetractedPos(-retractedPosEditStep);
@@ -115,8 +111,9 @@ public class Teleop extends LinearOpMode {
                 lift.retract();
                 arm.goToGrab(); // Similar behavior to "goToScore"
             }
-            // Make the lift move
+            // Update everything (lift is really important)
             lift.update();
+            arm.update();
 
 
             // Print stuff to telemetry if we want to
