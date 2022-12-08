@@ -47,12 +47,11 @@ public class Auto extends LinearOpMode {
         // Init
         // Bind stuff to the hardwaremap
         drive = new SampleMecanumDrive(hardwareMap);
-        drive.setPoseEstimate(startPos);
         scoringMech = new AutoScoringMech(hardwareMap);
         camera = new Camera(hardwareMap, signalPipeline);
         FtcDashboard.getInstance().startCameraStream(camera.webcam, 3);
 
-        ElapsedTime pipelineThrottle = new ElapsedTime();
+        ElapsedTime pipelineThrottle = new ElapsedTime(100000);
 
         // Init loop
         while (!isStarted()&&!isStopRequested()){
@@ -96,7 +95,7 @@ public class Auto extends LinearOpMode {
                 }
 
                 // Update trajectories
-                preloadScoringPos = new Pose2d(-10, -32.5*side, Math.toRadians(-135*side));
+                preloadScoringPos = new Pose2d(-12, -39.5*side, Math.toRadians(-126*side));
 
                 driveToScoringPos = drive.trajectorySequenceBuilder(startPos)
                         .back(2.5)
