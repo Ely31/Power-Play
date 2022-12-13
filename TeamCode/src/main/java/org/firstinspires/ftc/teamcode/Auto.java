@@ -3,18 +3,18 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.hardware.Arm;
 import org.firstinspires.ftc.teamcode.hardware.AutoScoringMech;
 import org.firstinspires.ftc.teamcode.hardware.Camera;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.AutoToTele;
-import org.firstinspires.ftc.teamcode.util.Utility;
 import org.firstinspires.ftc.teamcode.vision.SignalPipeline;
 
 //this autonomous is meant for if you start on the left side of the field
@@ -37,8 +37,9 @@ public class Auto extends LinearOpMode {
     Pose2d parkPos2;
     Pose2d parkPos3;
     Pose2d preloadScoringPos;
-    TrajectorySequence driveToScoringPos;
+    TrajectorySequence driveToPreloadPos;
     TrajectorySequence toStack;
+    double grabApproachVelo = 15;
     TrajectorySequence toJunction;
     TrajectorySequence park;
 
@@ -97,13 +98,21 @@ public class Auto extends LinearOpMode {
                 // Update trajectories
                 preloadScoringPos = new Pose2d(-12, -39.5*side, Math.toRadians(-126*side));
 
-                driveToScoringPos = drive.trajectorySequenceBuilder(startPos)
+                driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
                         .back(2.5)
                         .lineToSplineHeading(new Pose2d(-10, -56*side,Math.toRadians(-90*side)))
                         .lineToSplineHeading(preloadScoringPos)
                         .build();
 
-                park = drive.trajectorySequenceBuilder(driveToScoringPos.end())
+                toStack = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
+                        .setTangent(Math.toRadians(-126))
+                        .splineToSplineHeading(new Pose2d(-40,-12*side, Math.toRadians(180)), Math.toRadians(180))
+                        // Slow the bot down for the cone grab
+                        .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
+                        .lineTo(new Vector2d(-60, -12*side))
+                        .build();
+
+                park = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
                         .lineToSplineHeading(parkPos)
                         .build();
 
@@ -127,9 +136,11 @@ public class Auto extends LinearOpMode {
             // Move the v4b vertical to save time when scoring and stop the cone from dragging on the ground
             scoringMech.preMoveV4B();
 
-            drive.followTrajectorySequence(driveToScoringPos);
+            drive.followTrajectorySequence(driveToPreloadPos);
 
             scoringMech.score(Lift.highPos);
+
+            drive.followTrajectorySequence(toStack);
 
             drive.followTrajectorySequence(park);
 

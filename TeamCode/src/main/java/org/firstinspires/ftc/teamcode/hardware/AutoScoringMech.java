@@ -57,31 +57,35 @@ public class AutoScoringMech {
         arm.preMoveV4b();
     }
 
+    public void grabOffStackAsync(int coneNumber){
+        switch (currentStackGrabbingState){
+            case CREEPING:
+                release(); // That method is poorly named here
+                arm.setPivotPos(stackPositions[coneNumber]);
+                if (arm.coneIsInClaw()){
+                    stackGrabbingWait.reset();
+                    grab();
+                    currentStackGrabbingState = StackGrabbingState.GRABBING;
+                }
+                break;
+            case GRABBING:
+                if (stackGrabbingWait.seconds() > 0.5){
+                    stackGrabbingWait.reset();
+                    preMoveV4B();
+                    currentStackGrabbingState = StackGrabbingState.LIFTING;
+                }
+                break;
+            case LIFTING:
+                if (stackGrabbingWait.seconds() > 0.5){
+                    currentStackGrabbingState = StackGrabbingState.DONE;
+                }
+                break;
+        }
+    }
+
     public void grabOffStack(int coneNumber){
-        while (!(currentStackGrabbingState == StackGrabbingState.DONE)){
-            switch (currentStackGrabbingState){
-                case CREEPING:
-                    release(); // That method is poorly named here
-                    arm.setPivotPos(stackPositions[coneNumber]);
-                    if (arm.coneIsInClaw()){
-                        stackGrabbingWait.reset();
-                        grab();
-                        currentStackGrabbingState = StackGrabbingState.GRABBING;
-                    }
-                    break;
-                case GRABBING:
-                    if (stackGrabbingWait.seconds() > 0.5){
-                        stackGrabbingWait.reset();
-                        preMoveV4B();
-                        currentStackGrabbingState = StackGrabbingState.LIFTING;
-                    }
-                    break;
-                case LIFTING:
-                    if (stackGrabbingWait.seconds() > 0.5){
-                        currentStackGrabbingState = StackGrabbingState.DONE;
-                    }
-                    break;
-            }
+        while (!(currentStackGrabbingState == StackGrabbingState.DONE)) {
+            grabOffStackAsync(coneNumber);
         }
     }
 
@@ -128,6 +132,10 @@ public class AutoScoringMech {
             // Always update the lift, no matter what state of scoring it's in
             lift.update();
         }
+    }
+
+    public void update(){
+        lift.update();
     }
 
 }
