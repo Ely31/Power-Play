@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.sensors.RevColorSensor;
 import org.firstinspires.ftc.teamcode.util.Utility;
 
 @Config
@@ -13,6 +15,7 @@ public class Arm {
     Servo rightPivot;
     Servo end;
     Servo claw;
+    ColorSensor clawSensor;
 
     boolean mode = true; // True is passthrough, false is sameside
     boolean clawState = false;
@@ -37,12 +40,15 @@ public class Arm {
     public static double clawClosedPos = 0.2;
     public static double clawOpenPos = 0.45;
 
+    public static double sensorThreshold = 100;
+
     public Arm(HardwareMap hwmap){
         // Hardwaremap stuff
         leftPivot = hwmap.get(Servo.class, "leftPivot");
         rightPivot = hwmap.get(Servo.class, "rightPivot");
         end = hwmap.get(Servo.class, "end");
         claw = hwmap.get(Servo.class, "claw");
+        clawSensor = hwmap.get(ColorSensor.class, "clawSensor");
 
         leftPivot.setDirection(Servo.Direction.REVERSE);
         end.setDirection(Servo.Direction.REVERSE);
@@ -112,6 +118,10 @@ public class Arm {
         setEndPos(endSamesideScoringPos);
     }
 
+    public void preMoveV4b(){
+        setPivotPos(0.48);
+    }
+
     // Use two modes to switch between passthrough and sameside strategies
     public void setMode(boolean mode){
         this.mode = mode;
@@ -133,6 +143,10 @@ public class Arm {
         else scoreGroundSameside();
     }
 
+    public boolean coneIsInClaw(){
+        return clawSensor.alpha() > sensorThreshold;
+    }
+
     public void update(){
         if (clawState) openClaw();
         else closeClaw();
@@ -146,5 +160,3 @@ public class Arm {
         telemetry.addData("Mode",mode);
     }
 }
-
-
