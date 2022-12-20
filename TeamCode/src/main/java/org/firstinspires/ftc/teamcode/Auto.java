@@ -39,7 +39,7 @@ public class Auto extends LinearOpMode {
     Pose2d preloadScoringPos;
     TrajectorySequence driveToPreloadPos;
     TrajectorySequence toStack;
-    double grabApproachVelo = 15;
+    double grabApproachVelo = 5;
     TrajectorySequence toJunction;
     TrajectorySequence park;
 
@@ -105,11 +105,15 @@ public class Auto extends LinearOpMode {
                         .build();
 
                 toStack = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
-                        .setTangent(Math.toRadians(-126))
-                        .splineToSplineHeading(new Pose2d(-40,-12*side, Math.toRadians(180)), Math.toRadians(180))
-                        // Slow the bot down for the cone grab
-                        .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
+                        .lineToSplineHeading(new Pose2d(-11.1, -20*side, Math.toRadians(180*side)))
+                        .splineToConstantHeading(new Vector2d(-55,-12*side), Math.toRadians(180*side))
+                        .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
                         .lineTo(new Vector2d(-60, -12*side))
+                        .build();
+
+                toJunction = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .lineTo(new Vector2d(-30, -12*side))
+                        .splineTo(new Vector2d(-12, -14*side), Math.toRadians(-30*side))
                         .build();
 
                 park = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
@@ -132,17 +136,22 @@ public class Auto extends LinearOpMode {
         if (opModeIsActive()){
             // Auto code
             scoringMech.grab(); // Grip the preload
-            sleep(200);
+            sleep(500);
             // Move the v4b vertical to save time when scoring and stop the cone from dragging on the ground
             scoringMech.preMoveV4B();
-
+            // Drive off and Score the preload
             drive.followTrajectorySequence(driveToPreloadPos);
-
             scoringMech.score(Lift.highPos);
 
-            drive.followTrajectorySequence(toStack);
+            drive.followTrajectorySequenceAsync(toStack);
+            while(drive.isBusy()){
+                drive.update();
+                scoringMech.grabOffStack(0, scoringMech.hasCone());
+            }
 
-            drive.followTrajectorySequence(park);
+            drive.followTrajectorySequence(toJunction);
+
+            drive.followTrajectorySequence(park); // Big 20 points
 
             // Save this stuff at the end to calibrate feild centric automatically
             AutoToTele.endOfAutoPose = drive.getPoseEstimate();

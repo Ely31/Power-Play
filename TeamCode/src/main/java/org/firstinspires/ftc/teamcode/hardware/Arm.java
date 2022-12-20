@@ -37,7 +37,7 @@ public class Arm {
     public static double endSamesideGrabbingPos = 0.7;
     public static double endSamesideScoringPos = 0;
 
-    public static double clawClosedPos = 0.2;
+    public static double clawClosedPos = 0.96;
     public static double clawOpenPos = 0.45;
 
     public static double sensorThreshold = 100;

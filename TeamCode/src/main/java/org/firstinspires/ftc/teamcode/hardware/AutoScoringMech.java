@@ -53,16 +53,20 @@ public class AutoScoringMech {
         arm.openClaw();
     }
 
+    public boolean hasCone(){
+        return arm.coneIsInClaw();
+    }
+
     public void preMoveV4B(){
         arm.preMoveV4b();
     }
 
-    public void grabOffStackAsync(int coneNumber){
+    public void grabOffStackAsync(int coneNumber, boolean hasCone){
         switch (currentStackGrabbingState){
             case CREEPING:
                 release(); // That method is poorly named here
                 arm.setPivotPos(stackPositions[coneNumber]);
-                if (arm.coneIsInClaw()){
+                if (hasCone){
                     stackGrabbingWait.reset();
                     grab();
                     currentStackGrabbingState = StackGrabbingState.GRABBING;
@@ -83,9 +87,9 @@ public class AutoScoringMech {
         }
     }
 
-    public void grabOffStack(int coneNumber){
+    public void grabOffStack(int coneNumber, boolean hasCone){
         while (!(currentStackGrabbingState == StackGrabbingState.DONE)) {
-            grabOffStackAsync(coneNumber);
+            grabOffStackAsync(coneNumber, hasCone);
         }
     }
 
