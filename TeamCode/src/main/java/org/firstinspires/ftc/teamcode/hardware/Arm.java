@@ -24,7 +24,7 @@ public class Arm {
     public static double leftOffset = 0.005;
 
     public static double pivotMax = 0.97;
-    public static double pivotMin = 0.07;
+    public static double pivotMin = 0.04;
     public static double pivotPassthroughGrabbingPos = pivotMin;
     public static double pivotSamesideGrabbingPos = pivotPassthroughGrabbingPos; // Scuffed hack at the tournament
     public static double pivotScoringPos = 0.7;
@@ -32,8 +32,8 @@ public class Arm {
 
     public static double endMin = 0;
     public static double endMax = 1;
-    public static double endPassthroughGrabbingPos = 0.45;
-    public static double endPassthroughScoringPos = 0.43;
+    public static double endPassthroughGrabbingPos = 0.53;
+    public static double endPassthroughScoringPos = 0.45;
     public static double endSamesideGrabbingPos = 0.7;
     public static double endSamesideScoringPos = 0;
 
@@ -153,10 +153,11 @@ public class Arm {
     }
 
     public void displayDebug(Telemetry telemetry){
-        telemetry.addData("Left pivot",leftPivot.getPosition());
-        telemetry.addData("Right pivot",rightPivot.getPosition());
-        telemetry.addData("End",end.getPosition());
-        telemetry.addData("Claw",claw.getPosition());
-        telemetry.addData("Mode",mode);
+        telemetry.addData("Left pivot pos",leftPivot.getPosition());
+        telemetry.addData("Right pivot pos",rightPivot.getPosition());
+        telemetry.addData("End pos",end.getPosition());
+        telemetry.addData("Claw pos",claw.getPosition());
+        telemetry.addData("Arm Mode",mode);
+        telemetry.addData("Claw sensor val", clawSensor.alpha());
     }
 }

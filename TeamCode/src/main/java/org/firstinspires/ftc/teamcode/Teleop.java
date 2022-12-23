@@ -60,7 +60,7 @@ public class Teleop extends LinearOpMode {
             drive.driveFieldCentric(
                     gamepad1.left_stick_x * drivingSpeedMultiplier,
                     gamepad1.left_stick_y * drivingSpeedMultiplier,
-                    gamepad1.right_stick_x * drivingSpeedMultiplier * 0.7,
+                    gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
                     gamepad1.right_trigger);
             if (gamepad1.share) drive.resetHeading();
 

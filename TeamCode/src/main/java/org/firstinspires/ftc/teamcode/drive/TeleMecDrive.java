@@ -90,7 +90,7 @@ public class TeleMecDrive {
         setMaxRPMFraction(0.95);
         // Configure motor behavior
         setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        setMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Use bulk reads
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
@@ -113,6 +113,7 @@ public class TeleMecDrive {
 
         heading = -((imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading-Math.toRadians(90 * AutoToTele.allianceSide)) + headingOffset) + Math.toRadians(180));
 
+        // Matrix math I don't understand to rotate the joystick input by the heading
         rotX = x * Math.cos(heading) - -y * Math.sin(heading);
         rotY = x * Math.sin(heading) + -y * Math.cos(heading);
 
