@@ -17,8 +17,7 @@ public class Arm {
     Servo claw;
     ColorSensor clawSensor;
 
-    boolean mode = true; // True is passthrough, false is sameside
-    boolean clawState = false;
+    boolean clawState = false; // True is closed
 
     // Constants
     public static double leftOffset = 0.005;
@@ -26,7 +25,6 @@ public class Arm {
     public static double pivotMax = 0.97;
     public static double pivotMin = 0.04;
     public static double pivotPassthroughGrabbingPos = pivotMin;
-    public static double pivotSamesideGrabbingPos = pivotPassthroughGrabbingPos; // Scuffed hack at the tournament
     public static double pivotScoringPos = 0.7;
     public static double pivotGroundScoringPos = 0.92;
 
@@ -34,13 +32,12 @@ public class Arm {
     public static double endMax = 1;
     public static double endPassthroughGrabbingPos = 0.53;
     public static double endPassthroughScoringPos = 0.45;
-    public static double endSamesideGrabbingPos = 0.7;
-    public static double endSamesideScoringPos = 0;
 
     public static double clawClosedPos = 0.96;
     public static double clawOpenPos = 0.45;
+    public static double clawActuationTime = 400; // In milliseconds
 
-    public static double sensorThreshold = 100;
+    public static double sensorThreshold = 800;
 
     public Arm(HardwareMap hwmap){
         // Hardwaremap stuff
@@ -97,58 +94,26 @@ public class Arm {
         setPivotPos(pivotPassthroughGrabbingPos);
         setEndPos(endPassthroughGrabbingPos);
     }
-    public void grabSameside(){
-        setPivotPos(pivotSamesideGrabbingPos);
-        setEndPos(endSamesideGrabbingPos);
-    }
     public void scorePassthrough(){
         setPivotPos(pivotScoringPos);
         setEndPos(endPassthroughScoringPos);
     }
-    public void scoreSameside(){
-        setPivotPos(pivotScoringPos);
-        setEndPos(endSamesideScoringPos);
-    }
     public void scoreGroundPassthrough() {
         setPivotPos(pivotGroundScoringPos);
         setEndPos(endPassthroughScoringPos);
-    }
-    public void scoreGroundSameside() {
-        setPivotPos(pivotGroundScoringPos);
-        setEndPos(endSamesideScoringPos);
     }
 
     public void preMoveV4b(){
         setPivotPos(0.48);
     }
 
-    // Use two modes to switch between passthrough and sameside strategies
-    public void setMode(boolean mode){
-        this.mode = mode;
-    }
-    public boolean getMode(){
-        return mode;
-    }
-
-    public void goToGrab(){
-        if (mode) grabPassthrough();
-        else grabSameside();
-    }
-    public void goToScore(){
-        if (mode) scorePassthrough();
-        else scoreSameside();
-    }
-    public void goToScoreGround(){
-        if (mode) scoreGroundPassthrough();
-        else scoreGroundSameside();
-    }
 
     public boolean coneIsInClaw(){
         return clawSensor.alpha() > sensorThreshold;
     }
 
     public void update(){
-        if (clawState) openClaw();
+        if (!clawState) openClaw();
         else closeClaw();
     }
 
@@ -157,7 +122,8 @@ public class Arm {
         telemetry.addData("Right pivot pos",rightPivot.getPosition());
         telemetry.addData("End pos",end.getPosition());
         telemetry.addData("Claw pos",claw.getPosition());
-        telemetry.addData("Arm Mode",mode);
+        telemetry.addData("Claw closed", getClawState());
         telemetry.addData("Claw sensor val", clawSensor.alpha());
+        telemetry.addData("Cone in claw", coneIsInClaw());
     }
 }

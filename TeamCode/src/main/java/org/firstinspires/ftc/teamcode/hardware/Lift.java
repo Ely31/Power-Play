@@ -23,7 +23,7 @@ public class Lift {
     public static double mediumPos = 12;
     public static double highPos = 20;
 
-    public static PIDCoefficients coeffs = new PIDCoefficients(0.3,0.08,0.035);
+    public static PIDCoefficients coeffs = new PIDCoefficients(0.3,0.08,0.03);
     public static double f = 0.4;
 
     public Lift(HardwareMap hwmap){

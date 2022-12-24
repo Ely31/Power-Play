@@ -20,13 +20,11 @@ public class Teleop extends LinearOpMode {
     TeleMecDrive drive;
     double drivingSpeedMultiplier;
     Arm arm;
+    ElapsedTime clawReleaseTimer = new ElapsedTime();
     Lift lift;
 
     // Other variables
-    boolean clawState = false;
     boolean prevClawInput = false;
-
-    boolean prevCyclingModeInput = false;
 
     boolean extended = false;
     boolean prevExtendedInput = false;
@@ -49,6 +47,7 @@ public class Teleop extends LinearOpMode {
 
         waitForStart();
         matchTimer.reset();
+        clawReleaseTimer.reset();
         while (opModeIsActive()){
             // Send signals to drivers when endgame approaches
             timeUtil.update(matchTimer.milliseconds());
@@ -71,6 +70,11 @@ public class Teleop extends LinearOpMode {
             }
             prevClawInput = gamepad1.left_bumper;
 
+            // Automatically grab a cone if the claw sees one
+            if (arm.coneIsInClaw()){
+                arm.setClawState(true);
+            }
+
 
             // ARM AND LIFT CONTROL
             // Edit things
@@ -85,13 +89,6 @@ public class Teleop extends LinearOpMode {
             // Edit retracted pos for grabbing off the stack (this may be a scuffed way of doing it but comp is in two days)
             if (gamepad2.triangle) lift.editRetractedPos(retractedPosEditStep);
             if (gamepad2.cross) lift.editRetractedPos(-retractedPosEditStep);
-            if (arm.getMode()) lift.resetRetractedPos();
-
-            // Rising edge detector controlling a toggle for cycling mode (sameside and passthrough)
-            if (gamepad2.share && !prevCyclingModeInput){
-                arm.setMode(!arm.getMode());
-            }
-            prevCyclingModeInput = gamepad2.share;
 
             // Rising edge detector controlling a toggle for the extended state
             if ((gamepad1.left_trigger > 0) && !prevExtendedInput){
@@ -101,15 +98,9 @@ public class Teleop extends LinearOpMode {
 
             // Do stuff with all those variables we just changed or tuned
             if (extended){
-                lift.goToJunction(activeJunction);
-                // Have a special case for the gronud junction
-                if (activeJunction == 0){
-                    arm.goToScoreGround();
-                } else arm.goToScore(); // The action of this method depends on the value of "mode" in the arm class
-
+                extend();
             } else {
-                lift.retract();
-                arm.goToGrab(); // Similar behavior to "goToScore"
+               retract();
             }
             // Update everything (lift is really important)
             lift.update();
@@ -118,7 +109,6 @@ public class Teleop extends LinearOpMode {
 
             // Print stuff to telemetry if we want to
             if (debug) {
-                telemetry.addData("clawState", clawState);
                 telemetry.addData("extended", extended);
                 lift.disalayDebug(telemetry);
                 arm.displayDebug(telemetry);
@@ -128,9 +118,12 @@ public class Teleop extends LinearOpMode {
             }
             // Someone should be able to learn how to drive without looking at the source code
             if (instructionsOn) {
+                telemetry.addLine();
+                telemetry.addLine();
                 telemetry.addLine("Gamepad 1 controls:");
                 telemetry.addLine("Driving: Left stick is translation, right stick x is rotation. Use the right trigger to slow down.");
                 telemetry.addLine("calibrate feild-centric with the share button after you point the bot with the claw facing towards you");
+                telemetry.addLine();
                 telemetry.addLine("Lift and arm: toggle the claw open and closed with the left bumper, and toggle extend/retract with the left trigger");
                 telemetry.addLine("Switch levels with buttons cross, square, triangle, and circle.");
                 telemetry.addLine("Ground level is cross, levels get higher as you travel clockwise along the four buttons");
@@ -140,6 +133,21 @@ public class Teleop extends LinearOpMode {
                 telemetry.addLine("The height tweaks made are saved and will persist until the opmode is stopped.");
             }
             telemetry.update();
-        }
+        } // End of loop
     }
+
+    // Methods
+    void extend(){
+        lift.goToJunction(activeJunction);
+        // Have a special case for the gronud junction
+        if (activeJunction == 0){
+            arm.scoreGroundPassthrough();
+        } else arm.scorePassthrough(); // The action of this method depends on the value of "mode" in the arm class
+    }
+    void retract(){
+        lift.retract();
+        arm.grabPassthrough(); // Similar behavior to "goToScore"
+    }
+
+
 }
