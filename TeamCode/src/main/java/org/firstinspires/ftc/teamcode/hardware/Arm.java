@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.hardware.sensors.RevColorSensor;
 import org.firstinspires.ftc.teamcode.util.Utility;
 
 @Config
@@ -22,18 +21,19 @@ public class Arm {
     // Constants
     public static double leftOffset = 0.005;
 
-    public static double pivotMax = 0.97;
+    public static double pivotMax = 0.9;
     public static double pivotMin = 0.04;
-    public static double pivotPassthroughGrabbingPos = pivotMin;
-    public static double pivotScoringPos = 0.7;
-    public static double pivotGroundScoringPos = 0.92;
+    public static double pivotGrabbingPos = pivotMin;
+    public static double pivotScoringPos = 0.65;
+    public static double pivotGroundScoringPos = 0.875;
 
     public static double endMin = 0;
     public static double endMax = 1;
-    public static double endPassthroughGrabbingPos = 0.53;
-    public static double endPassthroughScoringPos = 0.45;
+    public static double endGrabbingPos = 0.53;
+    public static double endScoringPos = 0.35;
+    public static double endGroundScoringPos = 0.45;
 
-    public static double clawClosedPos = 0.96;
+    public static double clawClosedPos = 0.93;
     public static double clawOpenPos = 0.45;
     public static double clawActuationTime = 400; // In milliseconds
 
@@ -91,30 +91,24 @@ public class Arm {
 
     // All the different positions of the arm
     public void grabPassthrough(){
-        setPivotPos(pivotPassthroughGrabbingPos);
-        setEndPos(endPassthroughGrabbingPos);
+        setPivotPos(pivotGrabbingPos);
+        setEndPos(endGrabbingPos);
     }
     public void scorePassthrough(){
         setPivotPos(pivotScoringPos);
-        setEndPos(endPassthroughScoringPos);
+        setEndPos(endScoringPos);
     }
     public void scoreGroundPassthrough() {
         setPivotPos(pivotGroundScoringPos);
-        setEndPos(endPassthroughScoringPos);
+        setEndPos(endGroundScoringPos);
     }
 
     public void preMoveV4b(){
         setPivotPos(0.48);
     }
 
-
     public boolean coneIsInClaw(){
         return clawSensor.alpha() > sensorThreshold;
-    }
-
-    public void update(){
-        if (!clawState) openClaw();
-        else closeClaw();
     }
 
     public void displayDebug(Telemetry telemetry){

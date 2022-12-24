@@ -25,6 +25,13 @@ public class Teleop extends LinearOpMode {
 
     // Other variables
     boolean prevClawInput = false;
+    // Claw fsm enum
+    enum ClawState {
+        OPEN,
+        ClOSED,
+        WAITING_OPEN
+    }
+    ClawState clawState = ClawState.OPEN;
 
     boolean extended = false;
     boolean prevExtendedInput = false;
@@ -50,8 +57,7 @@ public class Teleop extends LinearOpMode {
         clawReleaseTimer.reset();
         while (opModeIsActive()){
             // Send signals to drivers when endgame approaches
-            timeUtil.update(matchTimer.milliseconds());
-            timeUtil.updateGamepads(gamepad1, gamepad2);
+           timeUtil.updateAll(matchTimer.milliseconds(), gamepad1, gamepad2);
 
             // Relate the max speed of the bot to the height of the lift to prevent tipping
             drivingSpeedMultiplier = 1 - (lift.getHeight() * 0.035);
@@ -64,17 +70,7 @@ public class Teleop extends LinearOpMode {
             if (gamepad1.share) drive.resetHeading();
 
             // CLAW CONTROL
-            // Rising edge detector controlling a toggle
-            if (gamepad1.left_bumper && !prevClawInput){
-                arm.setClawState(!arm.getClawState());
-            }
-            prevClawInput = gamepad1.left_bumper;
-
-            // Automatically grab a cone if the claw sees one
-            if (arm.coneIsInClaw()){
-                arm.setClawState(true);
-            }
-
+            updateClaw(gamepad1.left_bumper);
 
             // ARM AND LIFT CONTROL
             // Edit things
@@ -91,25 +87,18 @@ public class Teleop extends LinearOpMode {
             if (gamepad2.cross) lift.editRetractedPos(-retractedPosEditStep);
 
             // Rising edge detector controlling a toggle for the extended state
-            if ((gamepad1.left_trigger > 0) && !prevExtendedInput){
-                extended = !extended;
-            }
+            if ((gamepad1.left_trigger > 0) && !prevExtendedInput) extended = !extended;
             prevExtendedInput = (gamepad1.left_trigger > 0);
-
-            // Do stuff with all those variables we just changed or tuned
-            if (extended){
-                extend();
-            } else {
-               retract();
-            }
-            // Update everything (lift is really important)
+            // Extend or retract the lift based on this
+            if (extended) extend(); else retract();
+            // Update the lift, very important
             lift.update();
-            arm.update();
 
 
             // Print stuff to telemetry if we want to
             if (debug) {
                 telemetry.addData("extended", extended);
+                telemetry.addData("claw state", clawStateToString());
                 lift.disalayDebug(telemetry);
                 arm.displayDebug(telemetry);
                 telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
@@ -133,7 +122,7 @@ public class Teleop extends LinearOpMode {
                 telemetry.addLine("The height tweaks made are saved and will persist until the opmode is stopped.");
             }
             telemetry.update();
-        } // End of loop
+        } // End of the loop
     }
 
     // Methods
@@ -142,12 +131,61 @@ public class Teleop extends LinearOpMode {
         // Have a special case for the gronud junction
         if (activeJunction == 0){
             arm.scoreGroundPassthrough();
-        } else arm.scorePassthrough(); // The action of this method depends on the value of "mode" in the arm class
+        } else arm.scorePassthrough();
     }
     void retract(){
         lift.retract();
-        arm.grabPassthrough(); // Similar behavior to "goToScore"
+        arm.grabPassthrough();
     }
 
+    void updateClaw(boolean input){
+        switch(clawState){
+            case OPEN:
+                arm.openClaw();
+                // If the button is pressed for the first time or the sensor detects a cone, close the claw
+                if ((input && !prevClawInput) || arm.coneIsInClaw()){
+                    clawState = ClawState.ClOSED;
+                }
+                break;
+            case ClOSED:
+                arm.closeClaw();
+                if (input && !prevClawInput){
+                    clawState = ClawState.WAITING_OPEN;
+                }
+                break;
+            case WAITING_OPEN:
+                arm.openClaw();
+                // If you press the button again, close it
+                if (input && !prevClawInput){
+                    clawState = ClawState.ClOSED;
+                }
+                // If it stops seeing the cone, go back to the open state, where it starts to look for one again
+                if (!arm.coneIsInClaw()){
+                    clawState = ClawState.OPEN;
+                }
+                break;
+        }
+        prevClawInput = input;
+    }
+
+    String clawStateToString(){
+        // I feel like this should be easier
+        String output;
+        switch (clawState){
+            case OPEN:
+                output = "open";
+                break;
+            case ClOSED:
+                output = "closed";
+                break;
+            case WAITING_OPEN:
+                output = "waiting open";
+                break;
+            default:
+                output = "default";
+                break;
+        }
+        return output;
+    }
 
 }

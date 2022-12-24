@@ -154,4 +154,8 @@ public class TimeUtil {
             g2.runLedEffect(endgameLightEffect);
         }
     }
+    public void updateAll(double currentTime, Gamepad g1, Gamepad g2){
+        update(currentTime);
+        updateGamepads(g1, g2);
+    }
 }
