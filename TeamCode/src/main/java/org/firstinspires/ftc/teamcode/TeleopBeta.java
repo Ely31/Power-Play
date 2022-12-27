@@ -28,7 +28,6 @@ public class TeleopBeta extends LinearOpMode {
     enum GrabbingState {
         OPEN,
         ClOSED,
-        ClOSING,
         WAITING_OPEN
     }
     GrabbingState grabbingState = GrabbingState.OPEN;
@@ -96,13 +95,19 @@ public class TeleopBeta extends LinearOpMode {
             prevStackIndexDownInput = gamepad2.cross;
 
             // Rising edge detector controlling a toggle for the extended state
-            if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
-                scoring = !scoring;
-            }
+            if ((gamepad1.left_trigger > 0) && !prevScoringInput) scoring = !scoring;
+
             // Extend or retract the lift based on this
             if (scoring) scoringMech.score();
-            else if (!(scoringMech.getPivotPos() == Arm.pivotPremovePos && grabbingState == GrabbingState.ClOSING)) scoringMech.retract();
+
+            else if (grabbingState == GrabbingState.ClOSED && clawActuationTimer.milliseconds() > Arm.clawActuationTime){
+                scoringMech.preMoveV4b();
+                scoringMech.retractLift();
+            }
+            else scoringMech.retract();
+
             prevScoringInput = (gamepad1.left_trigger > 0);
+
 
             // Update the lift so its pid controller runs, very important
             scoringMech.updateLift();
@@ -138,12 +143,10 @@ public class TeleopBeta extends LinearOpMode {
         } // End of the loop
     }
 
-    // This is by far the most complicated state machine I've ever made
     void updateClaw(boolean input){
         switch(grabbingState){
             case OPEN:
                 scoringMech.openClaw();
-                clawActuationTimer.reset();
                 // If the button is pressed for the first time or the sensor detects a cone, close the claw
                 if ((input && !prevClawInput) || scoringMech.getConeStatus()){
                     grabbingState = GrabbingState.ClOSED;
@@ -151,20 +154,12 @@ public class TeleopBeta extends LinearOpMode {
                 break;
             case ClOSED:
                 scoringMech.closeClaw();
-                clawActuationTimer.reset();
-                grabbingState = GrabbingState.ClOSING;
-                break;
-            case ClOSING:
-                if (clawActuationTimer.milliseconds() > Arm.clawActuationTime){
-                    scoringMech.preMoveV4b();
-                }
                 if (input && !prevClawInput){
                     grabbingState = GrabbingState.WAITING_OPEN;
                 }
                 break;
             case WAITING_OPEN:
                 scoringMech.openClaw();
-                clawActuationTimer.reset();
                 // If you press the button again, close it
                 if (input && !prevClawInput){
                     grabbingState = GrabbingState.ClOSED;
@@ -176,6 +171,8 @@ public class TeleopBeta extends LinearOpMode {
                 break;
         }
         prevClawInput = input;
+        // Keep the timer at zero until we want it to start ticking, when the claw is closed
+        if (!(grabbingState == GrabbingState.ClOSED)) clawActuationTimer.reset();
     }
 
     String grabbingStateToString(){
@@ -187,9 +184,6 @@ public class TeleopBeta extends LinearOpMode {
                 break;
             case ClOSED:
                 output = "closed";
-                break;
-            case ClOSING:
-                output = "closing";
                 break;
             case WAITING_OPEN:
                 output = "waiting open";

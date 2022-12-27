@@ -138,6 +138,9 @@ public class ScoringMech {
         lift.retract();
         arm.grabPassthrough();
     }
+    public void retractLift(){
+        lift.retract();
+    }
 
     // ESSENTIAL to call this function every loop
     public void updateLift(){
