@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
+import org.firstinspires.ftc.teamcode.hardware.Arm;
 import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 
@@ -24,21 +25,13 @@ public class TeleopBeta extends LinearOpMode {
     // Other variables
     boolean prevClawInput = false;
     // Claw fsm enum
-    enum ClawState {
+    enum GrabbingState {
         OPEN,
         ClOSED,
+        ClOSING,
         WAITING_OPEN
     }
-    ClawState clawState = ClawState.OPEN;
-
-    // Enable or disable the v4b automatically moving vertical after shutting the claw
-    // to save time while scoring and prevent dragging cones on the ground
-    public static boolean premoveV4bEnabled  = true;
-    enum PremoveState {
-        WAITING,
-        DONE
-    }
-    PremoveState premoveState = PremoveState.DONE;
+    GrabbingState grabbingState = GrabbingState.OPEN;
 
     boolean scoring = false;
     boolean prevScoringInput = false;
@@ -107,17 +100,18 @@ public class TeleopBeta extends LinearOpMode {
                 scoring = !scoring;
             }
             // Extend or retract the lift based on this
-            if (scoring) scoringMech.score(); else scoringMech.retract();
+            if (scoring) scoringMech.score();
+            else if (!(scoringMech.getPivotPos() == Arm.pivotPremovePos && grabbingState == GrabbingState.ClOSING)) scoringMech.retract();
             prevScoringInput = (gamepad1.left_trigger > 0);
 
-            // Update the lift and everything, very important
-            scoringMech.update();
+            // Update the lift so its pid controller runs, very important
+            scoringMech.updateLift();
 
 
             // Print stuff to telemetry if we want to
             if (debug) {
                 telemetry.addData("extended", scoring);
-                telemetry.addData("claw state", clawStateToString());
+                telemetry.addData("grabbing state", grabbingStateToString());
                 telemetry.addData("stack index", scoringMech.getStackIndex());
                 scoringMech.displayDebug(telemetry);
                 telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
@@ -144,45 +138,58 @@ public class TeleopBeta extends LinearOpMode {
         } // End of the loop
     }
 
+    // This is by far the most complicated state machine I've ever made
     void updateClaw(boolean input){
-        switch(clawState){
+        switch(grabbingState){
             case OPEN:
                 scoringMech.openClaw();
+                clawActuationTimer.reset();
                 // If the button is pressed for the first time or the sensor detects a cone, close the claw
                 if ((input && !prevClawInput) || scoringMech.getConeStatus()){
-                    clawState = ClawState.ClOSED;
+                    grabbingState = GrabbingState.ClOSED;
                 }
                 break;
             case ClOSED:
                 scoringMech.closeClaw();
+                clawActuationTimer.reset();
+                grabbingState = GrabbingState.ClOSING;
+                break;
+            case ClOSING:
+                if (clawActuationTimer.milliseconds() > Arm.clawActuationTime){
+                    scoringMech.preMoveV4b();
+                }
                 if (input && !prevClawInput){
-                    clawState = ClawState.WAITING_OPEN;
+                    grabbingState = GrabbingState.WAITING_OPEN;
                 }
                 break;
             case WAITING_OPEN:
                 scoringMech.openClaw();
+                clawActuationTimer.reset();
                 // If you press the button again, close it
                 if (input && !prevClawInput){
-                    clawState = ClawState.ClOSED;
+                    grabbingState = GrabbingState.ClOSED;
                 }
                 // If it stops seeing the cone, go back to the open state, where it starts to look for one again
                 if (!scoringMech.getConeStatus()){
-                    clawState = ClawState.OPEN;
+                    grabbingState = GrabbingState.OPEN;
                 }
                 break;
         }
         prevClawInput = input;
     }
 
-    String clawStateToString(){
+    String grabbingStateToString(){
         // I feel like this should be easier
         String output;
-        switch (clawState){
+        switch (grabbingState){
             case OPEN:
                 output = "open";
                 break;
             case ClOSED:
                 output = "closed";
+                break;
+            case ClOSING:
+                output = "closing";
                 break;
             case WAITING_OPEN:
                 output = "waiting open";

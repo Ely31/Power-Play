@@ -140,7 +140,7 @@ public class ScoringMech {
     }
 
     // ESSENTIAL to call this function every loop
-    public void update(){
+    public void updateLift(){
         lift.update();
     }
 
