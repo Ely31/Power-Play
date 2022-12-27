@@ -103,8 +103,12 @@ public class Lift {
                 break;
         }
     }
+
     public void editRetractedPos(double step){
         retractedPos += step;
+    }
+    public void setRetractedPos(double pos) {
+        retractedPos = pos;
     }
     public void resetRetractedPos(){
         retractedPos = 0;

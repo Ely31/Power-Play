@@ -6,22 +6,20 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
-import org.firstinspires.ftc.teamcode.hardware.Arm;
-import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 
 @Config
 @TeleOp
-public class Teleop extends LinearOpMode {
+public class TeleopBeta extends LinearOpMode {
     // Pre init
     TimeUtil timeUtil = new TimeUtil();
     ElapsedTime matchTimer = new ElapsedTime();
     // Hardware
     TeleMecDrive drive;
     double drivingSpeedMultiplier;
-    Arm arm;
+    ScoringMech scoringMech;
     ElapsedTime clawActuationTimer = new ElapsedTime();
-    Lift lift;
 
     // Other variables
     boolean prevClawInput = false;
@@ -32,6 +30,7 @@ public class Teleop extends LinearOpMode {
         WAITING_OPEN
     }
     ClawState clawState = ClawState.OPEN;
+
     // Enable or disable the v4b automatically moving vertical after shutting the claw
     // to save time while scoring and prevent dragging cones on the ground
     public static boolean premoveV4bEnabled  = true;
@@ -41,12 +40,14 @@ public class Teleop extends LinearOpMode {
     }
     PremoveState premoveState = PremoveState.DONE;
 
-    boolean extended = false;
-    boolean prevExtendedInput = false;
+    boolean scoring = false;
+    boolean prevScoringInput = false;
 
-    int activeJunction = 2; // 0,1,2,3 is ground, low, medium, and high respectively
+    boolean prevStackIndexUpInput = false;
+    boolean prevStackIndexDownInput = false;
+
     public static double posEditStep = 0.15;
-    public static double retractedPosEditStep = 0.07;
+
     // Telemetry options
     public static boolean debug = true;
     public static boolean instructionsOn = false;
@@ -57,8 +58,7 @@ public class Teleop extends LinearOpMode {
         telemetry.setMsTransmissionInterval(100);
         // Bind hardware to the hardwaremap
         drive = new TeleMecDrive(hardwareMap, 0.2);
-        arm = new Arm(hardwareMap);
-        lift  = new Lift(hardwareMap);
+        scoringMech = new ScoringMech(hardwareMap);
 
         waitForStart();
         matchTimer.reset();
@@ -68,7 +68,7 @@ public class Teleop extends LinearOpMode {
            timeUtil.updateAll(matchTimer.milliseconds(), gamepad1, gamepad2);
 
             // Relate the max speed of the bot to the height of the lift to prevent tipping
-            drivingSpeedMultiplier = 1 - (lift.getHeight() * 0.035);
+            drivingSpeedMultiplier = 1 - (scoringMech.getLiftHeight() * 0.035);
             // Drive the bot
             drive.driveFieldCentric(
                     gamepad1.left_stick_x * drivingSpeedMultiplier,
@@ -83,35 +83,43 @@ public class Teleop extends LinearOpMode {
             // ARM AND LIFT CONTROL
             // Edit things
             // Switch active junction using the four buttons on gamepad one
-            if (gamepad1.cross) activeJunction = 0;
-            if (gamepad1.square) activeJunction = 1;
-            if (gamepad1.triangle) activeJunction = 2;
-            if (gamepad1.circle) activeJunction = 3;
+            if (gamepad1.cross)     scoringMech.setActiveScoringJunction(0);
+            if (gamepad1.square)    scoringMech.setActiveScoringJunction(1);
+            if (gamepad1.triangle)  scoringMech.setActiveScoringJunction(2);
+            if (gamepad1.circle)    scoringMech.setActiveScoringJunction(3);
             // Edit the current level with the dpad on gamepad two
-            if (gamepad2.dpad_up) lift.editCurrentPos(activeJunction, posEditStep);
-            if (gamepad2.dpad_down) lift.editCurrentPos(activeJunction, -posEditStep);
-            // Edit retracted pos for grabbing off the stack (this may be a scuffed way of doing it but comp is in two days)
-            if (gamepad2.triangle) lift.editRetractedPos(retractedPosEditStep);
-            if (gamepad2.cross) lift.editRetractedPos(-retractedPosEditStep);
+            if (gamepad2.dpad_up)   scoringMech.editCurrentLiftPos(posEditStep);
+            if (gamepad2.dpad_down) scoringMech.editCurrentLiftPos(-posEditStep);
+            // Edit retracted pose for grabbing off the stack using rising edge detectors
+            if (gamepad2.triangle && !prevStackIndexUpInput) {
+                scoringMech.setStackIndex(scoringMech.getStackIndex() +1);
+                scoringMech.setRetractedGrabbingPose(scoringMech.getStackIndex());
+            }
+            prevStackIndexUpInput = gamepad2.triangle;
+            if (gamepad2.cross && !prevStackIndexDownInput) {
+                scoringMech.setStackIndex(scoringMech.getStackIndex() -1);
+                scoringMech.setRetractedGrabbingPose(scoringMech.getStackIndex());
+            }
+            prevStackIndexDownInput = gamepad2.cross;
 
             // Rising edge detector controlling a toggle for the extended state
-            if ((gamepad1.left_trigger > 0) && !prevExtendedInput) {
-                extended = !extended;
-                // Extend or retract the lift based on this
-                if (extended) extend(); else retract();
+            if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
+                scoring = !scoring;
             }
-            prevExtendedInput = (gamepad1.left_trigger > 0);
+            // Extend or retract the lift based on this
+            if (scoring) scoringMech.score(); else scoringMech.retract();
+            prevScoringInput = (gamepad1.left_trigger > 0);
 
-            // Update the lift, very important
-            lift.update();
+            // Update the lift and everything, very important
+            scoringMech.update();
 
 
             // Print stuff to telemetry if we want to
             if (debug) {
-                telemetry.addData("extended", extended);
+                telemetry.addData("extended", scoring);
                 telemetry.addData("claw state", clawStateToString());
-                lift.disalayDebug(telemetry);
-                arm.displayDebug(telemetry);
+                telemetry.addData("stack index", scoringMech.getStackIndex());
+                scoringMech.displayDebug(telemetry);
                 telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
                 telemetry.addData("period", timeUtil.getPeriod());
                 telemetry.addData("time", matchTimer.seconds());
@@ -136,42 +144,29 @@ public class Teleop extends LinearOpMode {
         } // End of the loop
     }
 
-    // Methods
-    void extend(){
-        lift.goToJunction(activeJunction);
-        // Have a special case for the gronud junction
-        if (activeJunction == 0){
-            arm.scoreGroundPassthrough();
-        } else arm.scorePassthrough();
-    }
-    void retract(){
-        lift.retract();
-        arm.grabPassthrough();
-    }
-
     void updateClaw(boolean input){
         switch(clawState){
             case OPEN:
-                arm.openClaw();
+                scoringMech.openClaw();
                 // If the button is pressed for the first time or the sensor detects a cone, close the claw
-                if ((input && !prevClawInput) || arm.coneIsInClaw()){
+                if ((input && !prevClawInput) || scoringMech.getConeStatus()){
                     clawState = ClawState.ClOSED;
                 }
                 break;
             case ClOSED:
-                arm.closeClaw();
+                scoringMech.closeClaw();
                 if (input && !prevClawInput){
                     clawState = ClawState.WAITING_OPEN;
                 }
                 break;
             case WAITING_OPEN:
-                arm.openClaw();
+                scoringMech.openClaw();
                 // If you press the button again, close it
                 if (input && !prevClawInput){
                     clawState = ClawState.ClOSED;
                 }
                 // If it stops seeing the cone, go back to the open state, where it starts to look for one again
-                if (!arm.coneIsInClaw()){
+                if (!scoringMech.getConeStatus()){
                     clawState = ClawState.OPEN;
                 }
                 break;

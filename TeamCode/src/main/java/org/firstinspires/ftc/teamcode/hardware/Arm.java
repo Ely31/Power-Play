@@ -26,6 +26,7 @@ public class Arm {
     public static double pivotGrabbingPos = pivotMin;
     public static double pivotScoringPos = 0.65;
     public static double pivotGroundScoringPos = 0.875;
+    public static double pivotPremovePos = 0.48;
 
     public static double endMin = 0;
     public static double endMax = 1;
@@ -103,8 +104,12 @@ public class Arm {
         setEndPos(endGroundScoringPos);
     }
 
+    public void setPivotGrabbingPos(double pos){
+        pivotGrabbingPos = pos;
+    }
+
     public void preMoveV4b(){
-        setPivotPos(0.48);
+        setPivotPos(pivotPremovePos);
     }
 
     public boolean coneIsInClaw(){
