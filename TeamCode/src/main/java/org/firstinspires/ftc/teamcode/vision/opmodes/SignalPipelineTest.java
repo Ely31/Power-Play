@@ -1,21 +1,22 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.opmodes;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.hardware.Camera;
+import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
+import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 
 @Autonomous(group = "test")
 public class SignalPipelineTest extends LinearOpMode {
-    Camera camera;
+    PivotingCamera camera;
     SignalPipeline pipeline = new SignalPipeline();
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.setMsTransmissionInterval(100);
 
-        camera = new Camera(hardwareMap, pipeline);
+        camera = new PivotingCamera(hardwareMap, pipeline);
         FtcDashboard.getInstance().startCameraStream(camera.webcam, 3);
 
         waitForStart();

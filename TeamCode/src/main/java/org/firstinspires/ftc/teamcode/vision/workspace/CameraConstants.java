@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.workspace;
 
 public class CameraConstants {
     public static final int cameraWidth = 320, cameraHeight = 240;

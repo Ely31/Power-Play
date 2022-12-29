@@ -1,14 +1,15 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.hardware.Camera;
+import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
+import org.firstinspires.ftc.teamcode.vision.workspace.CaptureImagePipeline;
 
 @TeleOp(group = "test")
 public class CaptureImageOpmode extends LinearOpMode {
 
-    Camera camera;
+    PivotingCamera camera;
     CaptureImagePipeline pipeline = new CaptureImagePipeline();
 
     boolean prevInput = false;
@@ -16,7 +17,7 @@ public class CaptureImageOpmode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.setMsTransmissionInterval(100);
-        camera = new Camera(hardwareMap, pipeline);
+        camera = new PivotingCamera(hardwareMap, pipeline);
     waitForStart();
 
     while (opModeIsActive()){

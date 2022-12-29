@@ -7,9 +7,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
-import org.firstinspires.ftc.teamcode.hardware.Camera;
+import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
+import org.firstinspires.ftc.teamcode.vision.workspace.JunctionPipeline;
 
 @Config
 @TeleOp
@@ -21,7 +22,8 @@ public class TeleopBeta extends LinearOpMode {
     TeleMecDrive drive;
     double drivingSpeedMultiplier;
     ScoringMech scoringMech;
-    Camera camera;
+    PivotingCamera camera;
+    JunctionPipeline pipeline = new JunctionPipeline();
     ElapsedTime clawActuationTimer = new ElapsedTime();
 
     // Other variables
@@ -53,7 +55,7 @@ public class TeleopBeta extends LinearOpMode {
         // Bind hardware to the hardwaremap
         drive = new TeleMecDrive(hardwareMap, 0.2);
         scoringMech = new ScoringMech(hardwareMap);
-        camera = new Camera(hardwareMap);
+        camera = new PivotingCamera(hardwareMap, pipeline);
 
         waitForStart();
         matchTimer.reset();

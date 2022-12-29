@@ -13,20 +13,33 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 @Config
-public class Camera {
+public class PivotingCamera {
 
     public OpenCvWebcam webcam;
+    private Servo servo;
 
-    public Camera(HardwareMap hwmap){
+    // Servo angle constants
+    public static double pos0 = 0;
+    public static double pos1 = 0.22;
+    public static double pos2 = 0.26;
+    public static double pos3 = 0.3;
+
+    public static double offset = 0;
+
+    double[] posArray = {pos0, pos1, pos2, pos3};
+
+    public PivotingCamera(HardwareMap hwmap){
         init(hwmap);
     }
-    public Camera(HardwareMap hwmap, OpenCvPipeline pipeline){
+    public PivotingCamera(HardwareMap hwmap, OpenCvPipeline pipeline){
         init(hwmap);
         setPipeline(pipeline);
     }
 
     public void init(HardwareMap hwmap) { // Initialization of camera and pipeline
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hwmap.get(WebcamName.class, "Webcam 1"));
+        servo = hwmap.get(Servo.class, "cameraPivot");
+        servo.setDirection(Servo.Direction.REVERSE);
 
         webcam.setMillisecondsPermissionTimeout(1000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -48,5 +61,14 @@ public class Camera {
     }
     public void setPipeline(OpenCvPipeline pipeline){
         webcam.setPipeline(pipeline);
+    }
+
+
+    // Pivot servo stuff
+    public void setAngle(double angle){
+        servo.setPosition(angle + offset);
+    }
+    public void setPos(int pos){
+        setAngle(posArray[pos]);
     }
 }

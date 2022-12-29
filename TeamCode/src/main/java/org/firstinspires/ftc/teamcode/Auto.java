@@ -11,11 +11,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.hardware.AutoScoringMech;
-import org.firstinspires.ftc.teamcode.hardware.Camera;
+import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.AutoToTele;
-import org.firstinspires.ftc.teamcode.vision.SignalPipeline;
+import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 
 //this autonomous is meant for if you start on the left side of the field
 //regular is the red side of the field, -1 is blue side of the field
@@ -24,7 +24,7 @@ import org.firstinspires.ftc.teamcode.vision.SignalPipeline;
 public class Auto extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
-    Camera camera;
+    PivotingCamera camera;
     SignalPipeline signalPipeline = new SignalPipeline();
     AutoScoringMech scoringMech;
 
@@ -49,7 +49,7 @@ public class Auto extends LinearOpMode {
         // Bind stuff to the hardwaremap
         drive = new SampleMecanumDrive(hardwareMap);
         scoringMech = new AutoScoringMech(hardwareMap);
-        camera = new Camera(hardwareMap, signalPipeline);
+        camera = new PivotingCamera(hardwareMap, signalPipeline);
         FtcDashboard.getInstance().startCameraStream(camera.webcam, 3);
 
         ElapsedTime pipelineThrottle = new ElapsedTime(100000);

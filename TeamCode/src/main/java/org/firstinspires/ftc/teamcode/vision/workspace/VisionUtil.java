@@ -1,13 +1,12 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.workspace;
 
-import static org.firstinspires.ftc.teamcode.vision.CameraConstants.cameraHeight;
-import static org.firstinspires.ftc.teamcode.vision.CameraConstants.cameraWidth;
-import static org.firstinspires.ftc.teamcode.vision.CameraConstants.pixelsPerHorizontalDegree;
-import static org.firstinspires.ftc.teamcode.vision.CameraConstants.pixelsPerVerticalDegree;
+import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.cameraHeight;
+import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.cameraWidth;
+import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.pixelsPerHorizontalDegree;
+import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.pixelsPerVerticalDegree;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
@@ -29,15 +28,15 @@ public class VisionUtil {
 
     // Color constants
     public Scalar
-            red = new Scalar(255,0,0),
-            orange = new Scalar(255,130,0),
-            yellow = new Scalar(255,255,0),
-            green = new Scalar(0,255,0),
-            cyan = new Scalar(0,255,255),
-            blue = new Scalar(0,0,255),
-            magenta = new Scalar(255,0,255),
-            black = new Scalar(0,0,0),
-            white = new Scalar(255,255,255);
+            red = new Scalar(       255,0,  0),
+            orange = new Scalar(    255,130,0),
+            yellow = new Scalar(    255,255,0),
+            green = new Scalar(     0,  255,0),
+            cyan = new Scalar(      0,  255,255),
+            blue = new Scalar(      0,  0,  255),
+            magenta = new Scalar(   255,0,  255),
+            black = new Scalar(     0,  0,  0),
+            white = new Scalar(     255,255,255);
 
     // Blur a little and convert to YCrCb
     public void prepareFrame(Mat inputMat){
@@ -62,18 +61,12 @@ public class VisionUtil {
         return contours;
     }
 
-/*
-    public RotatedRect[] getFittedEllipses(Mat input, List<MatOfPoint> contours){
-        RotatedRect[contours.size()] rects;
-        for (int i = 0; i < contours.size(); i++) {
-                fittedEllipse = new RotatedRect[contours.size()];
-                fittedEllipse[i] = Imgproc.fitEllipse(new MatOfPoint2f(contours.get(i).toArray()));
-            }
-    }
-*/
     // Simplify the eocv method a little bit
+    public void drawContours(Mat outputmat, List<MatOfPoint> contours, Scalar color, int thickness){
+        Imgproc.drawContours(outputmat, contours, -1, color, thickness);
+    }
     public void drawContours(Mat outputmat, List<MatOfPoint> contours, Scalar color){
-        Imgproc.drawContours(outputmat, contours, -1, color, 1);
+        drawContours(outputmat, contours, color, 1);
     }
 
     // Scoring methods
@@ -123,5 +116,14 @@ public class VisionUtil {
     }
     public double getVerticalAngle(Point point){
         return (getCorrectedY((int) point.y) * pixelsPerVerticalDegree);
+    }
+
+    // Scuffed, copied from Utility.java to work with eocv sim
+    // Takes an input and checks if it's close enough to the normal value
+    public static boolean withinErrorOfValue(double input, double normalValue, double acceptableError){
+        double min = normalValue - acceptableError;
+        double max = normalValue + acceptableError;
+
+        return (min < input && input < max);
     }
 }

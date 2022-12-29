@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.opmodes;
 
+import org.firstinspires.ftc.teamcode.vision.workspace.VisionUtil;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;

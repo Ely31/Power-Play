@@ -1,8 +1,5 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.vision.workspace;
 
-import com.acmerobotics.dashboard.config.Config;
-
-import org.firstinspires.ftc.teamcode.util.Utility;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -11,7 +8,6 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-@Config
 public class SignalPipeline extends OpenCvPipeline {
 
     private Mat focusedArea = new Mat();
@@ -51,9 +47,9 @@ public class SignalPipeline extends OpenCvPipeline {
     // This is the only one really used from outside this class
     public int getParkPos(){
         int pos = 1;
-        if (Utility.withinErrorOfValue(getHue(), perfectMagenta, colorTolerance)) pos = 1;
-        if (Utility.withinErrorOfValue(getHue(), perfectGreen, colorTolerance)) pos = 2;
-        if (Utility.withinErrorOfValue(getHue(), perfectBlue, colorTolerance)) pos = 3;
+        if (VisionUtil.withinErrorOfValue(getHue(), perfectMagenta, colorTolerance)) pos = 1;
+        if (VisionUtil.withinErrorOfValue(getHue(), perfectGreen, colorTolerance)) pos = 2;
+        if (VisionUtil.withinErrorOfValue(getHue(), perfectBlue, colorTolerance)) pos = 3;
         return pos;
     }
 }
