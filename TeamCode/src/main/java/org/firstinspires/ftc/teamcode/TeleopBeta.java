@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
+import org.firstinspires.ftc.teamcode.hardware.Camera;
 import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 
@@ -20,6 +21,7 @@ public class TeleopBeta extends LinearOpMode {
     TeleMecDrive drive;
     double drivingSpeedMultiplier;
     ScoringMech scoringMech;
+    Camera camera;
     ElapsedTime clawActuationTimer = new ElapsedTime();
 
     // Other variables
@@ -51,6 +53,7 @@ public class TeleopBeta extends LinearOpMode {
         // Bind hardware to the hardwaremap
         drive = new TeleMecDrive(hardwareMap, 0.2);
         scoringMech = new ScoringMech(hardwareMap);
+        camera = new Camera(hardwareMap);
 
         waitForStart();
         matchTimer.reset();
@@ -68,6 +71,9 @@ public class TeleopBeta extends LinearOpMode {
                     gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
                     gamepad1.right_trigger);
             if (gamepad1.share) drive.resetHeading();
+
+            // Make the camera point at the current junction height
+            camera.setPos(scoringMech.getActiveScoringJunction());
 
             // CLAW CONTROL
             updateClaw(gamepad1.left_bumper);
@@ -96,18 +102,15 @@ public class TeleopBeta extends LinearOpMode {
 
             // Rising edge detector controlling a toggle for the extended state
             if ((gamepad1.left_trigger > 0) && !prevScoringInput) scoring = !scoring;
+            prevScoringInput = (gamepad1.left_trigger > 0);
 
             // Extend or retract the lift based on this
             if (scoring) scoringMech.score();
-
             else if (grabbingState == GrabbingState.ClOSED && clawActuationTimer.milliseconds() > Arm.clawActuationTime){
                 scoringMech.preMoveV4b();
                 scoringMech.retractLift();
             }
             else scoringMech.retract();
-
-            prevScoringInput = (gamepad1.left_trigger > 0);
-
 
             // Update the lift so its pid controller runs, very important
             scoringMech.updateLift();
@@ -142,6 +145,8 @@ public class TeleopBeta extends LinearOpMode {
             telemetry.update();
         } // End of the loop
     }
+
+    // Some methods
 
     void updateClaw(boolean input){
         switch(grabbingState){
@@ -194,5 +199,4 @@ public class TeleopBeta extends LinearOpMode {
         }
         return output;
     }
-
 }

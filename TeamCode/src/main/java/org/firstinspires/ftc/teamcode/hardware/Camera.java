@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -10,11 +12,22 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
+@Config
 public class Camera {
 
     public OpenCvWebcam webcam;
+    private Servo servo;
 
-    public Camera(){} // Blank constructor for backwards compatability
+    // Servo angle constants
+    public static double pos0 = 0;
+    public static double pos1 = 0.22;
+    public static double pos2 = 0.26;
+    public static double pos3 = 0.3;
+
+    public static double offset = 0;
+
+    double[] posArray = {pos0, pos1, pos2, pos3};
+
     public Camera(HardwareMap hwmap){
         init(hwmap);
     }
@@ -25,12 +38,14 @@ public class Camera {
 
     public void init(HardwareMap hwmap) { // Initialization of camera and pipeline
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hwmap.get(WebcamName.class, "Webcam 1"));
+        servo = hwmap.get(Servo.class, "cameraPivot");
+        servo.setDirection(Servo.Direction.REVERSE);
 
         webcam.setMillisecondsPermissionTimeout(1000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPSIDE_DOWN);
             }
 
             @Override
@@ -46,5 +61,14 @@ public class Camera {
     }
     public void setPipeline(OpenCvPipeline pipeline){
         webcam.setPipeline(pipeline);
+    }
+
+
+    // Pivot servo stuff
+    public void setAngle(double angle){
+        servo.setPosition(angle + offset);
+    }
+    public void setPos(int pos){
+        setAngle(posArray[pos]);
     }
 }

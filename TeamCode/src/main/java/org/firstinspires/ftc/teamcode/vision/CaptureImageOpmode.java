@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.hardware.Camera;
 @TeleOp(group = "test")
 public class CaptureImageOpmode extends LinearOpMode {
 
-    Camera camera = new Camera();
+    Camera camera;
     CaptureImagePipeline pipeline = new CaptureImagePipeline();
 
     boolean prevInput = false;
@@ -16,8 +16,7 @@ public class CaptureImageOpmode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.setMsTransmissionInterval(100);
-        camera.init(hardwareMap);
-        camera.webcam.setPipeline(pipeline);
+        camera = new Camera(hardwareMap, pipeline);
     waitForStart();
 
     while (opModeIsActive()){
@@ -28,6 +27,8 @@ public class CaptureImageOpmode extends LinearOpMode {
         }
         prevInput = gamepad1.a;
 
+        telemetry.addLine("press A to take an image");
+        telemetry.addLine("previous images may be overwritten if you aren't careful");
         telemetry.update();
         }
     }
