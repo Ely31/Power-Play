@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
@@ -23,7 +26,10 @@ public class TeleopBeta extends LinearOpMode {
     double drivingSpeedMultiplier;
     ScoringMech scoringMech;
     PivotingCamera camera;
-    JunctionPipeline pipeline = new JunctionPipeline();
+    JunctionPipeline pipeline = new JunctionPipeline(telemetry);
+    PIDCoefficients trackingCoeffs = new PIDCoefficients(0.01,0,0);
+    PIDFController trackingController = new PIDFController(trackingCoeffs);
+
     ElapsedTime clawActuationTimer = new ElapsedTime();
 
     // Other variables
@@ -41,6 +47,9 @@ public class TeleopBeta extends LinearOpMode {
 
     boolean prevStackIndexUpInput = false;
     boolean prevStackIndexDownInput = false;
+
+    boolean trackingJunction = false;
+    boolean prevTrackingJunctionInput = false;
 
     public static double posEditStep = 0.15;
 
@@ -67,15 +76,29 @@ public class TeleopBeta extends LinearOpMode {
             // Relate the max speed of the bot to the height of the lift to prevent tipping
             drivingSpeedMultiplier = 1 - (scoringMech.getLiftHeight() * 0.035);
             // Drive the bot
-            drive.driveFieldCentric(
-                    gamepad1.left_stick_x * drivingSpeedMultiplier,
-                    gamepad1.left_stick_y * drivingSpeedMultiplier,
-                    gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
-                    gamepad1.right_trigger);
+            // If we're tracking a junction and the lift is up, hand over control of turning to the camera and pid controller
+            if (trackingJunction && scoring) {
+                drive.driveFieldCentric(
+                        gamepad1.left_stick_x * drivingSpeedMultiplier,
+                        gamepad1.left_stick_y * drivingSpeedMultiplier,
+                        trackingController.update(pipeline.getCorrectedJunctionXValue()),
+                        gamepad1.right_trigger);
+            } else {
+                // Otherwise, drive normally
+                drive.driveFieldCentric(
+                        gamepad1.left_stick_x * drivingSpeedMultiplier,
+                        gamepad1.left_stick_y * drivingSpeedMultiplier,
+                        gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
+                        gamepad1.right_trigger);
+            }
+
             if (gamepad1.share) drive.resetHeading();
 
             // Make the camera point at the current junction height
             camera.setPos(scoringMech.getActiveScoringJunction());
+            // Toggle junction tracking with start
+            if (gamepad1.start && !prevTrackingJunctionInput) trackingJunction = !trackingJunction;
+            prevTrackingJunctionInput = gamepad1.start;
 
             // CLAW CONTROL
             updateClaw(gamepad1.left_bumper);
@@ -121,8 +144,10 @@ public class TeleopBeta extends LinearOpMode {
             // Print stuff to telemetry if we want to
             if (debug) {
                 telemetry.addData("extended", scoring);
+                telemetry.addData("active junction", scoringMech.getActiveScoringJunction());
                 telemetry.addData("grabbing state", grabbingStateToString());
                 telemetry.addData("stack index", scoringMech.getStackIndex());
+                telemetry.addData("tracking", trackingJunction);
                 scoringMech.displayDebug(telemetry);
                 telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
                 telemetry.addData("period", timeUtil.getPeriod());

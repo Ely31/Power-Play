@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.vision.workspace;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -15,6 +16,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JunctionPipeline extends OpenCvPipeline {
+    // Constructor for eocv-sim telemetry
+    public JunctionPipeline(Telemetry telemetry){
+        this.telemetry = telemetry;
+    }
+    // Normal constructor
+    public JunctionPipeline(){}
+
+    VisionUtil vUtil = new VisionUtil(Imgproc.COLOR_RGB2HSV);
+    Telemetry telemetry = null;
 
     Mat binaryMat = new Mat();
     Mat rgbmat = new Mat();
@@ -33,13 +43,14 @@ public class JunctionPipeline extends OpenCvPipeline {
     Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(4, 4));
     Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6, 6));
 
-    VisionUtil vUtil = new VisionUtil(Imgproc.COLOR_RGB2HSV);
-
-    public static Scalar lower = new Scalar(10, 150, 50);
+    // Tuneable values for the threshold
+    public static Scalar lower = new Scalar(10, 110, 50);
     public static Scalar upper = new Scalar(40, 255, 200);
 
     // Configuration
     public static boolean openingEnabled = true;
+    // Used in the getCorrectedJunctionXValue method
+    public static double centerOffset = 0;
 
     @Override
     public Mat processFrame(Mat input) {
@@ -47,7 +58,7 @@ public class JunctionPipeline extends OpenCvPipeline {
         contours.clear();
         // Reset the largest rect and rect area so it finds the new one
         largestRectArea = 0;
-        largestRect = new RotatedRect(new Point(320/2, 10), new Size(10,10), 0);
+        largestRect = new RotatedRect(new Point(CameraConstants.cameraWidth/2.0, 10), new Size(10,10), 0);
         // Reset the top two points for the same reason
         resetHighPoints();
 
@@ -87,21 +98,26 @@ public class JunctionPipeline extends OpenCvPipeline {
         largestRectPoints = new Point[4];
         largestRect.points(largestRectPoints);
         // Find the highest two
-        for (Point largestRectPoint : largestRectPoints) {
+        for (int i = 0; i < largestRectPoints.length; i++) {
             // If higher than the highest, it is the highest
-            if (largestRectPoint.y > highestRectPoint.y) {
-                highestRectPoint = largestRectPoint;
+            if (largestRectPoints[i].y < highestRectPoint.y) {
+                highestRectPoint = largestRectPoints[i];
             }
             // If higher than the second highest but lower than the highest, it is the second highest
-            if (largestRectPoint.y < secondHighestRectPoint.y && !(largestRectPoint.y > highestRectPoint.y)) {
-                secondHighestRectPoint = largestRectPoint;
+            if (largestRectPoints[i].y < secondHighestRectPoint.y && (largestRectPoints[i].y > highestRectPoint.y)) {
+                secondHighestRectPoint = largestRectPoints[i];
             }
         }
-
+        // Mark the two highest points
+        Imgproc.circle(displayMat, highestRectPoint, 2, vUtil.magenta, 2);
+        Imgproc.circle(displayMat, secondHighestRectPoint, 2, vUtil.magenta, 2);
+        // Get the midpoint of those top two points to find the center of the top of the junction
         topCenterPoint = calculateMidpoint(highestRectPoint, secondHighestRectPoint);
 
-        Imgproc.circle(displayMat, topCenterPoint, 4, vUtil.white);
+        // Mark the point with a circle
+        Imgproc.circle(displayMat, topCenterPoint, 4, vUtil.white, 2);
 
+        printTelemetry();
         return displayMat;
     }
 
@@ -122,5 +138,21 @@ public class JunctionPipeline extends OpenCvPipeline {
 
     Point calculateMidpoint(Point p1, Point p2){
         return (new Point((p1.x + p2.x) /2.0, (p1.y + p2.y) /2.0));
+    }
+
+    double getJunctionXValue(){
+        return topCenterPoint.x;
+    }
+    public double getCorrectedJunctionXValue(){
+        return (getJunctionXValue() - (CameraConstants.cameraWidth/2.0)) + centerOffset;
+    }
+
+    void printTelemetry(){
+        telemetry.addData("highest point y", highestRectPoint.y);
+        telemetry.addData("highest point x", highestRectPoint.x);
+        telemetry.addData("second highest point y", secondHighestRectPoint.y);
+        telemetry.addData("second highest point x", secondHighestRectPoint.x);
+        telemetry.addData("corrected x val", getCorrectedJunctionXValue());
+        telemetry.update();
     }
 }
