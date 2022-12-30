@@ -44,8 +44,8 @@ public class JunctionPipeline extends OpenCvPipeline {
     Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(6, 6));
 
     // Tuneable values for the threshold
-    public static Scalar lower = new Scalar(10, 110, 50);
-    public static Scalar upper = new Scalar(40, 255, 200);
+    public static Scalar lower = new Scalar(0, 141, 50);
+    public static Scalar upper = new Scalar(30, 255, 200);
 
     // Configuration
     public static boolean openingEnabled = true;

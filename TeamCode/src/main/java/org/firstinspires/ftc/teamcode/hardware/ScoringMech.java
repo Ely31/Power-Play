@@ -28,8 +28,9 @@ public class ScoringMech {
     }
 
     // Arm pos, then lift pos
+    // 0 is on the bottom, 4 is on the very top of the stack
     public static double[] stackPose0 = {Arm.pivotGrabbingPos + 0,     0};
-    public static double[] stackPose1 = {Arm.pivotGrabbingPos + 0.01,  1.5};
+    public static double[] stackPose1 = {Arm.pivotGrabbingPos + 0.01,  1.2};
     public static double[] stackPose2 = {Arm.pivotGrabbingPos + 0.02,  2};
     public static double[] stackPose3 = {Arm.pivotGrabbingPos + 0.03,  3};
     public static double[] stackPose4 = {Arm.pivotGrabbingPos + 0.04,  3.5};
@@ -140,6 +141,9 @@ public class ScoringMech {
     }
     public void retractLift(){
         lift.retract();
+    }
+    public void v4bToGrabbingPos(){
+        arm.grabPassthrough();
     }
 
     // ESSENTIAL to call this function every loop

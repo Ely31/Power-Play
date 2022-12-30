@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.control.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
-import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
+import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
+import org.firstinspires.ftc.teamcode.vision.workspace.JunctionBasedOnHubPipeline;
+import org.firstinspires.ftc.teamcode.vision.workspace.JunctionPipeline;
 
 @Config
 @TeleOp
@@ -19,34 +24,36 @@ public class Teleop extends LinearOpMode {
     // Hardware
     TeleMecDrive drive;
     double drivingSpeedMultiplier;
-    Arm arm;
+    ScoringMech scoringMech;
+    PivotingCamera camera;
+    JunctionBasedOnHubPipeline pipeline = new JunctionBasedOnHubPipeline();
+    PIDCoefficients trackingCoeffs = new PIDCoefficients(0.005,0,0);
+    PIDFController trackingController = new PIDFController(trackingCoeffs);
+
     ElapsedTime clawActuationTimer = new ElapsedTime();
-    Lift lift;
+    ElapsedTime pivotActuationTimer = new ElapsedTime();
 
     // Other variables
     boolean prevClawInput = false;
     // Claw fsm enum
-    enum ClawState {
+    enum GrabbingState {
         OPEN,
         ClOSED,
         WAITING_OPEN
     }
-    ClawState clawState = ClawState.OPEN;
-    // Enable or disable the v4b automatically moving vertical after shutting the claw
-    // to save time while scoring and prevent dragging cones on the ground
-    public static boolean premoveV4bEnabled  = true;
-    enum PremoveState {
-        WAITING,
-        DONE
-    }
-    PremoveState premoveState = PremoveState.DONE;
+    GrabbingState grabbingState = GrabbingState.OPEN;
 
-    boolean extended = false;
-    boolean prevExtendedInput = false;
+    boolean scoring = false;
+    boolean prevScoringInput = false;
 
-    int activeJunction = 2; // 0,1,2,3 is ground, low, medium, and high respectively
+    boolean prevStackIndexUpInput = false;
+    boolean prevStackIndexDownInput = false;
+
+    boolean trackingJunction = false;
+    boolean prevTrackingJunctionInput = false;
+
     public static double posEditStep = 0.15;
-    public static double retractedPosEditStep = 0.07;
+
     // Telemetry options
     public static boolean debug = true;
     public static boolean instructionsOn = false;
@@ -57,25 +64,43 @@ public class Teleop extends LinearOpMode {
         telemetry.setMsTransmissionInterval(100);
         // Bind hardware to the hardwaremap
         drive = new TeleMecDrive(hardwareMap, 0.2);
-        arm = new Arm(hardwareMap);
-        lift  = new Lift(hardwareMap);
+        scoringMech = new ScoringMech(hardwareMap);
+        camera = new PivotingCamera(hardwareMap, pipeline);
 
         waitForStart();
         matchTimer.reset();
         clawActuationTimer.reset();
+        pivotActuationTimer.reset();
         while (opModeIsActive()){
             // Send signals to drivers when endgame approaches
            timeUtil.updateAll(matchTimer.milliseconds(), gamepad1, gamepad2);
 
             // Relate the max speed of the bot to the height of the lift to prevent tipping
-            drivingSpeedMultiplier = 1 - (lift.getHeight() * 0.035);
+            drivingSpeedMultiplier = 1 - (scoringMech.getLiftHeight() * 0.035);
             // Drive the bot
-            drive.driveFieldCentric(
-                    gamepad1.left_stick_x * drivingSpeedMultiplier,
-                    gamepad1.left_stick_y * drivingSpeedMultiplier,
-                    gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
-                    gamepad1.right_trigger);
+            // If we're tracking a junction and the lift is up, hand over control of turning to the camera and pid controller
+            if (trackingJunction && scoring) {
+                drive.driveFieldCentric(
+                        gamepad1.left_stick_x * drivingSpeedMultiplier,
+                        gamepad1.left_stick_y * drivingSpeedMultiplier,
+                        trackingController.update(pipeline.getJunctionX()),
+                        gamepad1.right_trigger);
+            } else {
+                // Otherwise, drive normally
+                drive.driveFieldCentric(
+                        gamepad1.left_stick_x * drivingSpeedMultiplier,
+                        gamepad1.left_stick_y * drivingSpeedMultiplier,
+                        gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
+                        gamepad1.right_trigger);
+            }
+
             if (gamepad1.share) drive.resetHeading();
+
+            // Make the camera point at the current junction height
+            camera.setPos(scoringMech.getActiveScoringJunction());
+            // Toggle junction tracking with start
+            if (gamepad1.start && !prevTrackingJunctionInput) trackingJunction = !trackingJunction;
+            prevTrackingJunctionInput = gamepad1.start;
 
             // CLAW CONTROL
             updateClaw(gamepad1.left_bumper);
@@ -83,35 +108,68 @@ public class Teleop extends LinearOpMode {
             // ARM AND LIFT CONTROL
             // Edit things
             // Switch active junction using the four buttons on gamepad one
-            if (gamepad1.cross) activeJunction = 0;
-            if (gamepad1.square) activeJunction = 1;
-            if (gamepad1.triangle) activeJunction = 2;
-            if (gamepad1.circle) activeJunction = 3;
+            if (gamepad1.cross)     scoringMech.setActiveScoringJunction(0);
+            if (gamepad1.square)    scoringMech.setActiveScoringJunction(1);
+            if (gamepad1.triangle)  scoringMech.setActiveScoringJunction(2);
+            if (gamepad1.circle)    scoringMech.setActiveScoringJunction(3);
             // Edit the current level with the dpad on gamepad two
-            if (gamepad2.dpad_up) lift.editCurrentPos(activeJunction, posEditStep);
-            if (gamepad2.dpad_down) lift.editCurrentPos(activeJunction, -posEditStep);
-            // Edit retracted pos for grabbing off the stack (this may be a scuffed way of doing it but comp is in two days)
-            if (gamepad2.triangle) lift.editRetractedPos(retractedPosEditStep);
-            if (gamepad2.cross) lift.editRetractedPos(-retractedPosEditStep);
+            if (gamepad2.dpad_up)   scoringMech.editCurrentLiftPos(posEditStep);
+            if (gamepad2.dpad_down) scoringMech.editCurrentLiftPos(-posEditStep);
+            // Edit retracted pose for grabbing off the stack using rising edge detectors
+            if (gamepad2.triangle && !prevStackIndexUpInput) {
+                scoringMech.setStackIndex(scoringMech.getStackIndex() +1);
+                scoringMech.setRetractedGrabbingPose(scoringMech.getStackIndex());
+            }
+            prevStackIndexUpInput = gamepad2.triangle;
+            if (gamepad2.cross && !prevStackIndexDownInput) {
+                scoringMech.setStackIndex(scoringMech.getStackIndex() -1);
+                scoringMech.setRetractedGrabbingPose(scoringMech.getStackIndex());
+            }
+            prevStackIndexDownInput = gamepad2.cross;
 
             // Rising edge detector controlling a toggle for the extended state
-            if ((gamepad1.left_trigger > 0) && !prevExtendedInput) {
-                extended = !extended;
-                // Extend or retract the lift based on this
-                if (extended) extend(); else retract();
+            if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
+                // Toggle scoring state
+                if (!scoring) scoring = true;
+                // If you were scoring and now you don't want to be, reset the pivotActuation timer to allow the stuff a few lines down to happen
+                else {
+                    scoring = false;
+                    pivotActuationTimer.reset();
+                }
             }
-            prevExtendedInput = (gamepad1.left_trigger > 0);
+            prevScoringInput = (gamepad1.left_trigger > 0);
 
-            // Update the lift, very important
-            lift.update();
+            // Extend or retract the lift based on this
+            if (scoring) scoringMech.score();
+            // Have a case to handle when the cone has not been released yet
+            else if (grabbingState == GrabbingState.ClOSED && clawActuationTimer.milliseconds() > Arm.clawActuationTime){
+                scoringMech.preMoveV4b();
+                // Wait til the v4b is clear of the junction before retracting the lift
+                if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime) {
+                    scoringMech.retractLift();
+                }
+            }
+            // This is the normal case
+            else {
+                scoringMech.v4bToGrabbingPos();
+                // Wait til the v4b is clear of the junction before retracting the lift
+                if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime) {
+                    scoringMech.retractLift();
+                }
+            }
+
+            // Update the lift so its pid controller runs, very important
+            scoringMech.updateLift();
 
 
             // Print stuff to telemetry if we want to
             if (debug) {
-                telemetry.addData("extended", extended);
-                telemetry.addData("claw state", clawStateToString());
-                lift.disalayDebug(telemetry);
-                arm.displayDebug(telemetry);
+                telemetry.addData("extended", scoring);
+                telemetry.addData("active junction", scoringMech.getActiveScoringJunction());
+                telemetry.addData("grabbing state", grabbingStateToString());
+                telemetry.addData("stack index", scoringMech.getStackIndex());
+                telemetry.addData("tracking", trackingJunction);
+                scoringMech.displayDebug(telemetry);
                 telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
                 telemetry.addData("period", timeUtil.getPeriod());
                 telemetry.addData("time", matchTimer.seconds());
@@ -131,58 +189,54 @@ public class Teleop extends LinearOpMode {
                 telemetry.addLine("Gamepad 2:");
                 telemetry.addLine("make fine adjustments to the current height with dpad up and down.");
                 telemetry.addLine("The height tweaks made are saved and will persist until the opmode is stopped.");
+                telemetry.addLine("Change the stach index (which preset grabbing height the robot retracts to) with cross and triangle");
+                telemetry.addLine("This allows you to grab off cone stacks");
+                telemetry.addLine();
+                telemetry.addLine();
+                telemetry.addLine("There's more details to the exact behavior of the code that you'll learn as you drive, but I don't want to write them down");
             }
             telemetry.update();
         } // End of the loop
     }
 
-    // Methods
-    void extend(){
-        lift.goToJunction(activeJunction);
-        // Have a special case for the gronud junction
-        if (activeJunction == 0){
-            arm.scoreGroundPassthrough();
-        } else arm.scorePassthrough();
-    }
-    void retract(){
-        lift.retract();
-        arm.grabPassthrough();
-    }
+    // Some methods
 
     void updateClaw(boolean input){
-        switch(clawState){
+        switch(grabbingState){
             case OPEN:
-                arm.openClaw();
+                scoringMech.openClaw();
                 // If the button is pressed for the first time or the sensor detects a cone, close the claw
-                if ((input && !prevClawInput) || arm.coneIsInClaw()){
-                    clawState = ClawState.ClOSED;
+                if ((input && !prevClawInput) || scoringMech.getConeStatus()){
+                    grabbingState = GrabbingState.ClOSED;
                 }
                 break;
             case ClOSED:
-                arm.closeClaw();
+                scoringMech.closeClaw();
                 if (input && !prevClawInput){
-                    clawState = ClawState.WAITING_OPEN;
+                    grabbingState = GrabbingState.WAITING_OPEN;
                 }
                 break;
             case WAITING_OPEN:
-                arm.openClaw();
+                scoringMech.openClaw();
                 // If you press the button again, close it
                 if (input && !prevClawInput){
-                    clawState = ClawState.ClOSED;
+                    grabbingState = GrabbingState.ClOSED;
                 }
                 // If it stops seeing the cone, go back to the open state, where it starts to look for one again
-                if (!arm.coneIsInClaw()){
-                    clawState = ClawState.OPEN;
+                if (!scoringMech.getConeStatus()){
+                    grabbingState = GrabbingState.OPEN;
                 }
                 break;
         }
         prevClawInput = input;
+        // Keep the timer at zero until we want it to start ticking, when the claw is closed
+        if (!(grabbingState == GrabbingState.ClOSED)) clawActuationTimer.reset();
     }
 
-    String clawStateToString(){
+    String grabbingStateToString(){
         // I feel like this should be easier
         String output;
-        switch (clawState){
+        switch (grabbingState){
             case OPEN:
                 output = "open";
                 break;
@@ -198,5 +252,4 @@ public class Teleop extends LinearOpMode {
         }
         return output;
     }
-
 }

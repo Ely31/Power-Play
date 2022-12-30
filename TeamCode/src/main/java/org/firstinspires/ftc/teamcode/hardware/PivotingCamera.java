@@ -20,9 +20,9 @@ public class PivotingCamera {
 
     // Servo angle constants
     public static double pos0 = 0;
-    public static double pos1 = 0.22;
-    public static double pos2 = 0.26;
-    public static double pos3 = 0.3;
+    public static double pos1 = 0.2;
+    public static double pos2 = 0.24;
+    public static double pos3 = 0.28;
 
     public static double offset = 0;
 
