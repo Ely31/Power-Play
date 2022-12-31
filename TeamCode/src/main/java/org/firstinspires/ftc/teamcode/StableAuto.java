@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -36,7 +37,9 @@ public class StableAuto extends LinearOpMode {
     Pose2d parkPos1;
     Pose2d parkPos2;
     Pose2d parkPos3;
-    Pose2d preloadScoringPos;
+    public static double scoringPosX = -10;
+    public static double scoringPosY = -32.5;
+    public static Pose2d preloadScoringPos = new Pose2d(scoringPosX, scoringPosY, Math.toRadians(-135));
     TrajectorySequence driveToScoringPos;
     TrajectorySequence toStack;
     TrajectorySequence toJunction;
@@ -57,11 +60,11 @@ public class StableAuto extends LinearOpMode {
         // Init
         // Bind stuff to the hardwaremap
         drive = new SampleMecanumDrive(hardwareMap);
-        drive.setPoseEstimate(startPos);
         arm = new Arm(hardwareMap);
         lift = new Lift(hardwareMap);
         camera = new PivotingCamera(hardwareMap, signalPipeline);
-        FtcDashboard.getInstance().startCameraStream(camera.webcam, 3);
+
+        telemetry = new MultipleTelemetry(FtcDashboard.getInstance().getTelemetry(), telemetry);
 
         ElapsedTime pipelineThrottle = new ElapsedTime();
         ElapsedTime scoringWait = new ElapsedTime();
@@ -80,9 +83,9 @@ public class StableAuto extends LinearOpMode {
                 startPos = new Pose2d(-35.8, -60.6*side, Math.toRadians(-90*side));
                 drive.setPoseEstimate(startPos);
 
-                parkPos1 = new Pose2d(-58.5, -32*side, Math.toRadians(-90*side));
-                parkPos2 = new Pose2d(-36, -32*side, Math.toRadians(-90*side));
-                parkPos3 = new Pose2d(-11, -32*side, Math.toRadians(-90*side));
+                parkPos1 = new Pose2d(-58.5,    -34*side, Math.toRadians(-90*side));
+                parkPos2 = new Pose2d(-36,      -34*side, Math.toRadians(-90*side));
+                parkPos3 = new Pose2d(-11,      -34*side, Math.toRadians(-90*side));
 
                 switch(signalPipeline.getParkPos()){
                     case 1:
@@ -108,15 +111,16 @@ public class StableAuto extends LinearOpMode {
                 }
 
                 // Update trajectories
-                preloadScoringPos = new Pose2d(-10, -32.5*side, Math.toRadians(-135*side));
+                preloadScoringPos = new Pose2d(-13, -43*side, Math.toRadians(-127*side));
 
                 driveToScoringPos = drive.trajectorySequenceBuilder(startPos)
                         .back(2.5)
-                        .lineToSplineHeading(new Pose2d(-10, -56*side,Math.toRadians(-90*side)))
+                        .lineToSplineHeading(new Pose2d(-12.5, -56*side,Math.toRadians(-90*side)))
                         .lineToSplineHeading(preloadScoringPos)
                         .build();
 
                 park = drive.trajectorySequenceBuilder(driveToScoringPos.end())
+                        .lineToSplineHeading(new Pose2d(-13, -36, Math.toRadians(-90)))
                         .lineToSplineHeading(parkPos)
                         .build();
 
@@ -167,7 +171,7 @@ public class StableAuto extends LinearOpMode {
                         }
                         break;
                     case WAIT3:
-                        if (scoringWait.seconds() > 1){ // Wait for the v4b to retract all the way
+                        if (scoringWait.seconds() > 0.5){ // Wait for the v4b to retract all the way
                             currentScoringState = ScoringState.RETRACTING;
                         }
                         break;

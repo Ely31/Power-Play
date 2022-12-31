@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 import org.firstinspires.ftc.teamcode.vision.workspace.JunctionBasedOnHubPipeline;
-import org.firstinspires.ftc.teamcode.vision.workspace.JunctionPipeline;
 
 @Config
 @TeleOp
@@ -27,7 +26,7 @@ public class Teleop extends LinearOpMode {
     ScoringMech scoringMech;
     PivotingCamera camera;
     JunctionBasedOnHubPipeline pipeline = new JunctionBasedOnHubPipeline();
-    PIDCoefficients trackingCoeffs = new PIDCoefficients(0.005,0,0);
+    public static PIDCoefficients trackingCoeffs = new PIDCoefficients(0.003,0.0001,0.0001);
     PIDFController trackingController = new PIDFController(trackingCoeffs);
 
     ElapsedTime clawActuationTimer = new ElapsedTime();
@@ -52,7 +51,7 @@ public class Teleop extends LinearOpMode {
     boolean trackingJunction = false;
     boolean prevTrackingJunctionInput = false;
 
-    public static double posEditStep = 0.15;
+    public static double liftPosEditStep = 0.15;
 
     // Telemetry options
     public static boolean debug = true;
@@ -66,6 +65,7 @@ public class Teleop extends LinearOpMode {
         drive = new TeleMecDrive(hardwareMap, 0.2);
         scoringMech = new ScoringMech(hardwareMap);
         camera = new PivotingCamera(hardwareMap, pipeline);
+        trackingController.setTargetPosition(0);
 
         waitForStart();
         matchTimer.reset();
@@ -83,7 +83,7 @@ public class Teleop extends LinearOpMode {
                 drive.driveFieldCentric(
                         gamepad1.left_stick_x * drivingSpeedMultiplier,
                         gamepad1.left_stick_y * drivingSpeedMultiplier,
-                        trackingController.update(pipeline.getJunctionX()),
+                        trackingController.update(-pipeline.getJunctionX()),
                         gamepad1.right_trigger);
             } else {
                 // Otherwise, drive normally
@@ -97,7 +97,7 @@ public class Teleop extends LinearOpMode {
             if (gamepad1.share) drive.resetHeading();
 
             // Make the camera point at the current junction height
-            camera.setPos(scoringMech.getActiveScoringJunction());
+            camera.setJunction(scoringMech.getActiveScoringJunction());
             // Toggle junction tracking with start
             if (gamepad1.start && !prevTrackingJunctionInput) trackingJunction = !trackingJunction;
             prevTrackingJunctionInput = gamepad1.start;
@@ -113,8 +113,8 @@ public class Teleop extends LinearOpMode {
             if (gamepad1.triangle)  scoringMech.setActiveScoringJunction(2);
             if (gamepad1.circle)    scoringMech.setActiveScoringJunction(3);
             // Edit the current level with the dpad on gamepad two
-            if (gamepad2.dpad_up)   scoringMech.editCurrentLiftPos(posEditStep);
-            if (gamepad2.dpad_down) scoringMech.editCurrentLiftPos(-posEditStep);
+            if (gamepad2.dpad_up)   scoringMech.editCurrentLiftPos(liftPosEditStep);
+            if (gamepad2.dpad_down) scoringMech.editCurrentLiftPos(-liftPosEditStep);
             // Edit retracted pose for grabbing off the stack using rising edge detectors
             if (gamepad2.triangle && !prevStackIndexUpInput) {
                 scoringMech.setStackIndex(scoringMech.getStackIndex() +1);

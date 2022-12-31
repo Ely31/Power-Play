@@ -15,8 +15,8 @@ public class SignalPipeline extends OpenCvPipeline {
 
     private int averageColor = 135;
 
-    public static Point topLeft = new Point(153, 0);
-    public static Point bottomRight = new Point(167, 45);
+    public static Point topLeft = new Point(CameraConstants.midpointX -7, 65);
+    public static Point bottomRight = new Point(CameraConstants.midpointX +7, 110);
     public static Rect focusedAreaRect = new Rect(topLeft, bottomRight);
 
     public static double perfectMagenta = 131;
@@ -29,7 +29,7 @@ public class SignalPipeline extends OpenCvPipeline {
 
         input.copyTo(displayMat);
         // Display focused area
-        Imgproc.rectangle(displayMat, topLeft, bottomRight, new Scalar(255,0,0), 2);
+        Imgproc.rectangle(displayMat, topLeft, bottomRight, new Scalar(0,0,0), 2);
 
         focusedArea = displayMat.submat(focusedAreaRect);
         Imgproc.cvtColor(focusedArea, focusedArea, Imgproc.COLOR_RGB2HSV);

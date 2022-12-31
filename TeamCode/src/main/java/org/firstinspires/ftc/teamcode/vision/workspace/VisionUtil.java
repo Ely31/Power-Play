@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.vision.workspace;
 
-import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.cameraHeight;
-import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.cameraWidth;
+import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.height;
+import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.width;
 import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.pixelsPerHorizontalDegree;
 import static org.firstinspires.ftc.teamcode.vision.workspace.CameraConstants.pixelsPerVerticalDegree;
 
@@ -104,10 +104,10 @@ public class VisionUtil {
 
     // "corrected" means that the origin is in the center instead of the top left
     public double getCorrectedX(int x){
-        return (x - (cameraWidth /2.0));
+        return (x - (width /2.0));
     }
     public double getCorrectedY(int y){
-        return (y - (cameraHeight/2.0));
+        return (y - (height /2.0));
     }
 
     // Convert pixel positions to angles

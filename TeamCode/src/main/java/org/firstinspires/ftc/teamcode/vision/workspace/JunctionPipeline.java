@@ -35,8 +35,8 @@ public class JunctionPipeline extends OpenCvPipeline {
     private double largestRectArea = 0;
     private RotatedRect largestRect = new RotatedRect();
     Point[] largestRectPoints = new Point[4];
-    Point highestRectPoint = new Point(CameraConstants.cameraWidth/2.0, CameraConstants.cameraHeight -10);
-    Point secondHighestRectPoint = new Point(CameraConstants.cameraWidth/2.0, CameraConstants.cameraHeight -30);
+    Point highestRectPoint = new Point(CameraConstants.width /2.0, CameraConstants.height -10);
+    Point secondHighestRectPoint = new Point(CameraConstants.width /2.0, CameraConstants.height -30);
     Point topCenterPoint = new Point();
 
     // Constant stuff for the cleanMask method
@@ -58,7 +58,7 @@ public class JunctionPipeline extends OpenCvPipeline {
         contours.clear();
         // Reset the largest rect and rect area so it finds the new one
         largestRectArea = 0;
-        largestRect = new RotatedRect(new Point(CameraConstants.cameraWidth/2.0, 10), new Size(10,10), 0);
+        largestRect = new RotatedRect(new Point(CameraConstants.width /2.0, 10), new Size(10,10), 0);
         // Reset the top two points for the same reason
         resetHighPoints();
 
@@ -132,8 +132,8 @@ public class JunctionPipeline extends OpenCvPipeline {
     }
 
     void resetHighPoints(){
-        highestRectPoint = new Point(CameraConstants.cameraWidth/2.0, CameraConstants.cameraHeight -10);
-        secondHighestRectPoint = new Point(CameraConstants.cameraWidth/2.0, CameraConstants.cameraHeight -20);
+        highestRectPoint = new Point(CameraConstants.width /2.0, CameraConstants.height -10);
+        secondHighestRectPoint = new Point(CameraConstants.width /2.0, CameraConstants.height -20);
     }
 
     Point calculateMidpoint(Point p1, Point p2){
@@ -144,7 +144,7 @@ public class JunctionPipeline extends OpenCvPipeline {
         return topCenterPoint.x;
     }
     public double getCorrectedJunctionXValue(){
-        return (getJunctionXValue() - (CameraConstants.cameraWidth/2.0)) + centerOffset;
+        return (getJunctionXValue() - (CameraConstants.width /2.0)) + centerOffset;
     }
 
     void printTelemetry(){

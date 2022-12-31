@@ -40,6 +40,7 @@ public class PivotingCamera {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hwmap.get(WebcamName.class, "Webcam 1"));
         servo = hwmap.get(Servo.class, "cameraPivot");
         servo.setDirection(Servo.Direction.REVERSE);
+        setJunction(0);
 
         webcam.setMillisecondsPermissionTimeout(1000); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -68,7 +69,7 @@ public class PivotingCamera {
     public void setAngle(double angle){
         servo.setPosition(angle + offset);
     }
-    public void setPos(int pos){
-        setAngle(posArray[pos]);
+    public void setJunction(int junction){
+        setAngle(posArray[junction]);
     }
 }

@@ -125,7 +125,7 @@ public class JunctionBasedOnHubPipeline extends OpenCvPipeline {
         return Math.abs(optimalEccentricity-getEccentricity(rect)) + Math.abs( optimalAreaRatio - getRectAreaRatio(rect, contour));
     }
     private void resetBestRect(){
-        bestRect = new RotatedRect(new Point(CameraConstants.cameraWidth/2.0,20), new Size(5,5),0);
+        bestRect = new RotatedRect(new Point(CameraConstants.width /2.0,20), new Size(5,5),0);
     }
 
     // Methods to return the ball coords
@@ -134,7 +134,7 @@ public class JunctionBasedOnHubPipeline extends OpenCvPipeline {
     }
     // Corrected means that if the ball is at the middle of the frame, the output is zero
     public double getCorrectedX(){
-        return (getRawX() - (CameraConstants.cameraWidth/2.0));
+        return (getRawX() - (CameraConstants.width /2.0));
     }
     public double getJunctionX(){
         return getCorrectedX();
