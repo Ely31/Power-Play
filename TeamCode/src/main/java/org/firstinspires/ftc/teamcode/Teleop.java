@@ -166,7 +166,7 @@ public class Teleop extends LinearOpMode {
             if (debug) {
                 telemetry.addData("extended", scoring);
                 telemetry.addData("active junction", scoringMech.getActiveScoringJunction());
-                telemetry.addData("grabbing state", grabbingStateToString());
+                telemetry.addData("grabbing state", grabbingState.name());
                 telemetry.addData("stack index", scoringMech.getStackIndex());
                 telemetry.addData("tracking", trackingJunction);
                 scoringMech.displayDebug(telemetry);
@@ -231,25 +231,5 @@ public class Teleop extends LinearOpMode {
         prevClawInput = input;
         // Keep the timer at zero until we want it to start ticking, when the claw is closed
         if (!(grabbingState == GrabbingState.ClOSED)) clawActuationTimer.reset();
-    }
-
-    String grabbingStateToString(){
-        // I feel like this should be easier
-        String output;
-        switch (grabbingState){
-            case OPEN:
-                output = "open";
-                break;
-            case ClOSED:
-                output = "closed";
-                break;
-            case WAITING_OPEN:
-                output = "waiting open";
-                break;
-            default:
-                output = "default";
-                break;
-        }
-        return output;
     }
 }

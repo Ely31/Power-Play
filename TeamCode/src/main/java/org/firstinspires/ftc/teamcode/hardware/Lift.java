@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -29,6 +30,8 @@ public class Lift {
     public Lift(HardwareMap hwmap){
         left = new LinearActuator(hwmap, "leftSpool", 13.7, 5.93);
         right = new LinearActuator(hwmap, "rightSpool", 13.7, 5.93);
+        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         left.zero();
         right.zero();
         left.setLimits(minHeight, maxHeight);

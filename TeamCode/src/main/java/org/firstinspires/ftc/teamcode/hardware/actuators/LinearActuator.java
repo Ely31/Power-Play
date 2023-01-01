@@ -73,6 +73,9 @@ public class LinearActuator {
         zero();
     }
 
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior){
+        motor.setZeroPowerBehavior(behavior);
+    }
     // you MUST call update EVERY loop for this stuff to work
     // it's done this way so that we only read from the motor once a loop, saving that data to variables,
     // so we don't hurt loop times by grabbing it multiple times.

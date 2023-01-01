@@ -39,7 +39,7 @@ public class AsyncAuto extends LinearOpMode {
     Pose2d preloadScoringPos;
     TrajectorySequence driveToPreloadPos;
     TrajectorySequence toStackFromPreload;
-    double grabApproachVelo = 5;
+    double grabApproachVelo = 10;
     TrajectorySequence toJunction;
     TrajectorySequence park;
 
@@ -60,6 +60,8 @@ public class AsyncAuto extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
         scoringMech = new AutoScoringMech(hardwareMap);
         camera = new PivotingCamera(hardwareMap, signalPipeline);
+        // Juice telemetry speed
+        telemetry.setMsTransmissionInterval(100);
 
         ElapsedTime pipelineThrottle = new ElapsedTime(100000000);
         ElapsedTime actionTimer = new ElapsedTime();
@@ -78,9 +80,9 @@ public class AsyncAuto extends LinearOpMode {
                 startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
                 drive.setPoseEstimate(startPos);
 
-                parkPos1 = new Pose2d(-58.5, -13*side, Math.toRadians(180*side));
-                parkPos2 = new Pose2d(-36, -13*side, Math.toRadians(180*side));
-                parkPos3 = new Pose2d(-11, -13*side, Math.toRadians(180*side));
+                parkPos1 = new Pose2d(-57, -12*side, Math.toRadians(180*side));
+                parkPos2 = new Pose2d(-36, -12*side, Math.toRadians(180*side));
+                parkPos3 = new Pose2d(-11, -12*side, Math.toRadians(180*side));
 
                 switch(signalPipeline.getParkPos()){
                     case 1:
@@ -92,7 +94,7 @@ public class AsyncAuto extends LinearOpMode {
                         }
                         break;
                     case 2:
-                        // We don't have to change the middle positon ever
+                        // We don't have to change the middle positon however
                         parkPos = parkPos2;
                         break;
                     case 3:
@@ -114,14 +116,14 @@ public class AsyncAuto extends LinearOpMode {
 
                 toStackFromPreload = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
                         .setTangent(Math.toRadians(-120*side))
-                        .splineToSplineHeading(new Pose2d(-55,-12.5*side, Math.toRadians(180*side)), Math.toRadians(180*side))
+                        .splineToSplineHeading(new Pose2d(-58,-12.2*side, Math.toRadians(180*side)), Math.toRadians(180*side))
                         .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                        .lineTo(new Vector2d(-64, -12.5*side))
+                        .lineTo(new Vector2d(-64, -12.2*side))
                         .build();
 
                 toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-                        .lineTo(new Vector2d(-30, -12*side))
-                        .splineToSplineHeading(new Pose2d(-21, -14*side, Math.toRadians(150*side)), Math.toRadians(-30*side))
+                        .lineTo(new Vector2d(-35, -12*side))
+                        .splineToSplineHeading(new Pose2d(-22.5, -12*side, Math.toRadians(150*side)), Math.toRadians(0*side))
                         .build();
 
                 park = drive.trajectorySequenceBuilder(toJunction.end())
@@ -154,6 +156,7 @@ public class AsyncAuto extends LinearOpMode {
                         // Set the drive on it's next trajectory
                         drive.followTrajectorySequenceAsync(driveToPreloadPos);
                         actionTimer.reset();
+                        scoringMech.setRetractedGrabbingPose(0);
                         autoState = AutoState.SCORING_PRELOAD;
                     }
                     break;
@@ -186,12 +189,13 @@ public class AsyncAuto extends LinearOpMode {
                         drive.followTrajectorySequenceAsync(toJunction);
                         actionTimer.reset();
                         scoringMech.resetStackGrabbingState();
+                        scoringMech.setRetractedGrabbingPose(0);
                         autoState = AutoState.TO_JUNCTION;
                     }
                     break;
 
                 case TO_JUNCTION:
-                        if (actionTimer.seconds() > 3){
+                        if (actionTimer.seconds() > 1.7){
                             scoringMech.scoreAsync(Lift.highPos);
                         }
                         if (scoringMech.getScoringState() == AutoScoringMech.ScoringState.DONE){
@@ -204,6 +208,7 @@ public class AsyncAuto extends LinearOpMode {
 
                 case PARKING:
                     // Yay, done
+                    scoringMech.updateLift();
                     break;
             }
 

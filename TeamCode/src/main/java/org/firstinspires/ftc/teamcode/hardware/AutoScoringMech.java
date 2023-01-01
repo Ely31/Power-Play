@@ -108,7 +108,7 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case WAITING_FOR_V4B_RETRACT:
-                if (scoringWait.seconds() > 0.5){ // Wait for the v4b to retract all the way
+                if (scoringWait.milliseconds() > Arm.pivotActuationTime + 100){ // Wait for the v4b to retract all the way
                     scoringState = ScoringState.RETRACTING;
                 }
                 break;
@@ -135,55 +135,8 @@ public class AutoScoringMech extends ScoringMech{
         scoringState = ScoringState.EXTENDING;
     }
 
-    String grabbingStateToString(){
-        // I feel like this should be easier
-        String output;
-        switch (stackGrabbingState){
-            case CREEPING:
-                output = "Creeping";
-                break;
-            case GRABBING:
-                output = "Grabbing";
-                break;
-            case LIFTING:
-                output = "Lifting";
-                break;
-            default:
-                output = "default";
-                break;
-        }
-        return output;
-    }
-    String scoringStateToString(){
-        // I feel like this should be easier
-        String output;
-        switch (scoringState){
-            case EXTENDING:
-                output = "Extending";
-                break;
-            case WAITING_FOR_V4B_EXTEND:
-                output = "Waiting for v4b extend";
-                break;
-            case WAITING_FOR_CONE_DROP:
-                output = "Waiting for cone drop";
-                break;
-            case WAITING_FOR_V4B_RETRACT:
-                output = "Waiting for v4b retract";
-                break;
-            case RETRACTING:
-                output = "Retracting";
-                break;
-            case DONE:
-                output = "Done";
-                break;
-            default:
-                output = "default";
-                break;
-        }
-        return output;
-    }
     public void displayDebug(Telemetry telemetry){
-        telemetry.addData("scoring state", scoringStateToString());
-        telemetry.addData("grabbing state", grabbingStateToString());
+        telemetry.addData("scoring state", scoringState.name());
+        telemetry.addData("grabbing state", stackGrabbingState.name());
     }
 }
