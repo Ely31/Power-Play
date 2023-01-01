@@ -4,142 +4,186 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.Utility;
 
 @Config
-public class AutoScoringMech {
-    Lift lift;
-    Arm arm;
+public class AutoScoringMech extends ScoringMech{
 
     ElapsedTime scoringWait = new ElapsedTime();
     ElapsedTime stackGrabbingWait = new ElapsedTime();
 
-    // Stack position constants
-    public static double cone0Pos = 0.2;
-    public static double cone1Pos = 0.17;
-    public static double cone2Pos = 0.15;
-    public static double cone3Pos = 0.12;
-    public static double cone4Pos = 0.09;
-    // Use an array here so we don't have to do a bunch of switch or if == stuff
-    double[] stackPositions = {cone0Pos, cone1Pos, cone2Pos, cone3Pos, cone4Pos};
-
-    enum ScoringState{
+    public enum ScoringState{
         EXTENDING,
-        WAIT,
-        WAIT2,
-        WAIT3,
+        WAITING_FOR_V4B_EXTEND,
+        WAITING_FOR_CONE_DROP,
+        WAITING_FOR_V4B_RETRACT,
         RETRACTING,
         DONE
     }
-    ScoringState currentScoringState = ScoringState.EXTENDING;
+    ScoringState scoringState = ScoringState.EXTENDING;
+    public ScoringState getScoringState() {
+        return scoringState;
+    }
 
-    enum StackGrabbingState{
+    public enum StackGrabbingState{
         CREEPING,
         GRABBING,
         LIFTING,
         DONE
     }
-    StackGrabbingState currentStackGrabbingState = StackGrabbingState.CREEPING;
+    StackGrabbingState stackGrabbingState = StackGrabbingState.CREEPING;
+    public StackGrabbingState getStackGrabbingState(){
+        return stackGrabbingState;
+    }
 
     public AutoScoringMech(HardwareMap hwmap){
         lift = new Lift(hwmap);
         arm = new Arm(hwmap);
-    }
-
-    public void grab(){
-        arm.closeClaw();
-    }
-    public void release(){
-        arm.openClaw();
-    }
-
-    public boolean hasCone(){
-        return arm.coneIsInClaw();
-    }
-
-    public void preMoveV4B(){
-        arm.preMoveV4b();
+        setStackIndex(0);
+        setRetractedGrabbingPose(0);
     }
 
     public void grabOffStackAsync(int coneNumber, boolean hasCone){
-        switch (currentStackGrabbingState){
+        switch (stackGrabbingState){
             case CREEPING:
-                release(); // That method is poorly named here
-                arm.setPivotPos(stackPositions[coneNumber]);
+                openClaw();
+                setRetractedGrabbingPose(coneNumber);
+                retract();
                 if (hasCone){
                     stackGrabbingWait.reset();
-                    grab();
-                    currentStackGrabbingState = StackGrabbingState.GRABBING;
+                    closeClaw();
+                    stackGrabbingState = StackGrabbingState.GRABBING;
                 }
                 break;
             case GRABBING:
                 if (stackGrabbingWait.seconds() > 0.5){
                     stackGrabbingWait.reset();
-                    preMoveV4B();
-                    currentStackGrabbingState = StackGrabbingState.LIFTING;
+                    preMoveV4b();
+                    stackGrabbingState = StackGrabbingState.LIFTING;
                 }
                 break;
             case LIFTING:
                 if (stackGrabbingWait.seconds() > 0.5){
-                    currentStackGrabbingState = StackGrabbingState.DONE;
+                    stackGrabbingState = StackGrabbingState.DONE;
                 }
                 break;
         }
+        updateLift();
     }
 
     public void grabOffStack(int coneNumber, boolean hasCone){
-        while (!(currentStackGrabbingState == StackGrabbingState.DONE)) {
+        while (!(stackGrabbingState == StackGrabbingState.DONE)) {
             grabOffStackAsync(coneNumber, hasCone);
         }
+    }
+    // Have to call this before grabbing off the stack again to kick start the fsm
+    public void resetStackGrabbingState(){
+        stackGrabbingState = StackGrabbingState.CREEPING;
+    }
+
+    public void scoreAsync(double height){
+        switch (scoringState){
+            case EXTENDING:
+                lift.setHeight(height);
+                // Move on if the lift is all the way up
+                if (Utility.withinErrorOfValue(lift.getHeight(), height, 0.5)) {
+                    arm.scorePassthrough(); // Move the v4b over the junction
+                    scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_V4B_EXTEND;
+                }
+                break;
+            case WAITING_FOR_V4B_EXTEND:
+                if (scoringWait.seconds() > 1){ // Wait for the v4b to move all the way
+                    arm.openClaw(); // Drop the cone
+                    scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_CONE_DROP;
+                }
+                break;
+            case WAITING_FOR_CONE_DROP:
+                if (scoringWait.seconds() > 0.2){ // Wait for the cone to drop
+                    arm.grabPassthrough(); // Move the v4b inside the bot
+                    scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_V4B_RETRACT;
+                }
+                break;
+            case WAITING_FOR_V4B_RETRACT:
+                if (scoringWait.seconds() > 0.5){ // Wait for the v4b to retract all the way
+                    scoringState = ScoringState.RETRACTING;
+                }
+                break;
+            case RETRACTING:
+                retractLift(); // Bring the lift down
+                // Move on if the lift is all the way down
+                if (Utility.withinErrorOfValue(lift.getHeight(), Lift.retractedPos, 0.5)) {
+                    scoringState = ScoringState.DONE; // Finish
+                }
+                break;
+        }
+        // Always update the lift, no matter what state of scoring it's in
+        updateLift();
     }
 
     public void score(double height){
         // While it isn't finished scoring, run an FSM
-        while (!(currentScoringState == ScoringState.DONE)){
-            switch (currentScoringState){
-                case EXTENDING:
-                    lift.goToHigh();
-                    // Move on if the lift is all the way up
-                    if (Utility.withinErrorOfValue(lift.getHeight(), Lift.highPos, 0.5)) {
-                        arm.scorePassthrough(); // Move the v4b over the junction
-                        scoringWait.reset();
-                        currentScoringState = ScoringState.WAIT;
-                    }
-                    break;
-                case WAIT:
-                    if (scoringWait.seconds() > 1){ // Wait for the v4b to move all the way
-                        arm.openClaw(); // Drop the cone
-                        scoringWait.reset();
-                        currentScoringState = ScoringState.WAIT2;
-                    }
-                    break;
-                case WAIT2:
-                    if (scoringWait.seconds() > 0.2){ // Wait for the cone to drop
-                        arm.grabPassthrough(); // Move the v4b inside the bot
-                        scoringWait.reset();
-                        currentScoringState = ScoringState.WAIT3;
-                    }
-                    break;
-                case WAIT3:
-                    if (scoringWait.seconds() > 0.5){ // Wait for the v4b to retract all the way
-                        currentScoringState = ScoringState.RETRACTING;
-                    }
-                    break;
-                case RETRACTING:
-                    lift.retract(); // Bring the lift down
-                    // Move on if the lift is all the way down
-                    if (Utility.withinErrorOfValue(lift.getHeight(), Lift.retractedPos, 0.5)) {
-                        currentScoringState = ScoringState.DONE; // Finish
-                    }
-                    break;
-            }
-            // Always update the lift, no matter what state of scoring it's in
-            lift.update();
+        while (!(scoringState == ScoringState.DONE)){
+            scoreAsync(height);
         }
     }
-
-    public void update(){
-        lift.update();
+    // Have to call this before scoring again to get the state machine to run
+    public void resetScoringState(){
+        scoringState = ScoringState.EXTENDING;
     }
 
+    String grabbingStateToString(){
+        // I feel like this should be easier
+        String output;
+        switch (stackGrabbingState){
+            case CREEPING:
+                output = "Creeping";
+                break;
+            case GRABBING:
+                output = "Grabbing";
+                break;
+            case LIFTING:
+                output = "Lifting";
+                break;
+            default:
+                output = "default";
+                break;
+        }
+        return output;
+    }
+    String scoringStateToString(){
+        // I feel like this should be easier
+        String output;
+        switch (scoringState){
+            case EXTENDING:
+                output = "Extending";
+                break;
+            case WAITING_FOR_V4B_EXTEND:
+                output = "Waiting for v4b extend";
+                break;
+            case WAITING_FOR_CONE_DROP:
+                output = "Waiting for cone drop";
+                break;
+            case WAITING_FOR_V4B_RETRACT:
+                output = "Waiting for v4b retract";
+                break;
+            case RETRACTING:
+                output = "Retracting";
+                break;
+            case DONE:
+                output = "Done";
+                break;
+            default:
+                output = "default";
+                break;
+        }
+        return output;
+    }
+    public void displayDebug(Telemetry telemetry){
+        telemetry.addData("scoring state", scoringStateToString());
+        telemetry.addData("grabbing state", grabbingStateToString());
+    }
 }

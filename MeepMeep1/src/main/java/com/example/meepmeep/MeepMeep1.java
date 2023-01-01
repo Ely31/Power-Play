@@ -20,7 +20,7 @@ public class MeepMeep1 {
 
         RoadRunnerBotEntity Bot1 = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(45, 30, Math.toRadians(120), Math.toRadians(120), 13.2)
+                .setConstraints(55, 40, Math.toRadians(180), Math.toRadians(180), 13.2)
                 .setDimensions(15,15)
                 .followTrajectorySequence(drive ->
                         drive.trajectorySequenceBuilder(new Pose2d(-8.8, -39.5,Math.toRadians(-126)))
@@ -33,20 +33,22 @@ public class MeepMeep1 {
 
         RoadRunnerBotEntity Bot2 = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(45, 30, Math.toRadians(120), Math.toRadians(120), 13.2)
+                .setConstraints(55, 40, Math.toRadians(180), Math.toRadians(180), 13.2)
                 .setDimensions(15,15)
                 .setColorScheme(new ColorSchemeBlueDark())
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-60, -12,Math.toRadians(180)))
-                                .lineTo(new Vector2d(-30, -12))
-                                .splineTo(new Vector2d(-12, -14), Math.toRadians(-30))
+                        drive.trajectorySequenceBuilder(new Pose2d(-37, -7, Math.toRadians(133)))
+                                .setTangent(Math.toRadians(-120))
+                                .splineToSplineHeading(new Pose2d(-55,-12.5, Math.toRadians(180)), Math.toRadians(180))
+                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(5, Math.toRadians(180), 13.2))
+                                .lineTo(new Vector2d(-64, -12.5))
                                 .build()
                 );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_KAI_DARK)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.9f)
-                .addEntity(Bot1)
+                //.addEntity(Bot1)
                 .addEntity(Bot2)
                 .start();
     }

@@ -41,8 +41,6 @@ public class StableAuto extends LinearOpMode {
     public static double scoringPosY = -32.5;
     public static Pose2d preloadScoringPos = new Pose2d(scoringPosX, scoringPosY, Math.toRadians(-135));
     TrajectorySequence driveToScoringPos;
-    TrajectorySequence toStack;
-    TrajectorySequence toJunction;
     TrajectorySequence park;
 
     enum ScoringState{

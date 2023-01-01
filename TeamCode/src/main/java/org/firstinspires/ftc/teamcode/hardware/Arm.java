@@ -60,9 +60,11 @@ public class Arm {
     // Methods for controlling each dof
     public void openClaw(){
         claw.setPosition(clawOpenPos);
+        clawState = false;
     }
     public void closeClaw(){
         claw.setPosition(clawClosedPos);
+        clawState = true;
     }
 
     public void setClawState(boolean state){

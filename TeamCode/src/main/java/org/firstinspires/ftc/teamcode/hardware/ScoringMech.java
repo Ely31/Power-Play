@@ -63,7 +63,10 @@ public class ScoringMech {
     public ScoringMech(HardwareMap hwmap){
         lift = new Lift(hwmap);
         arm = new Arm(hwmap);
+        setStackIndex(0);
+        setRetractedGrabbingPose(0);
     }
+    public ScoringMech(){}
 
     // Functions from the arm class
     public void openClaw(){
@@ -153,6 +156,8 @@ public class ScoringMech {
 
     // Stuff the ds with telemetry if we want
     public void displayDebug(Telemetry telemetry){
+        telemetry.addData("stack index", getStackIndex());
+        telemetry.addData("claw state", getClawState());
         arm.displayDebug(telemetry);
         lift.disalayDebug(telemetry);
     }

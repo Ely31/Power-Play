@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
 import org.firstinspires.ftc.teamcode.hardware.AutoScoringMech;
-import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
+import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.AutoToTele;
 import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 //regular is the red side of the field, -1 is blue side of the field
 @Config
 @Autonomous
-public class Auto extends LinearOpMode {
+public class AsyncAuto extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
     PivotingCamera camera;
@@ -43,6 +43,16 @@ public class Auto extends LinearOpMode {
     TrajectorySequence toJunction;
     TrajectorySequence park;
 
+    enum AutoState{
+        GRABBING_PRELOAD,
+        SCORING_PRELOAD,
+        TO_STACK_FROM_PRELOAD,
+        WAITING_FOR_CONE_GRAB,
+        TO_JUNCTION,
+        PARKING
+    }
+    AutoState autoState = AutoState.GRABBING_PRELOAD;
+
     @Override
     public void runOpMode(){
         // Init
@@ -52,6 +62,7 @@ public class Auto extends LinearOpMode {
         camera = new PivotingCamera(hardwareMap, signalPipeline);
 
         ElapsedTime pipelineThrottle = new ElapsedTime(100000000);
+        ElapsedTime actionTimer = new ElapsedTime();
 
         // Init loop
         while (!isStarted()&&!isStopRequested()){
@@ -105,12 +116,12 @@ public class Auto extends LinearOpMode {
                         .setTangent(Math.toRadians(-120*side))
                         .splineToSplineHeading(new Pose2d(-55,-12.5*side, Math.toRadians(180*side)), Math.toRadians(180*side))
                         .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                        .lineTo(new Vector2d(-64.5, -12.5*side))
+                        .lineTo(new Vector2d(-64, -12.5*side))
                         .build();
 
-                toJunction = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
                         .lineTo(new Vector2d(-30, -12*side))
-                        .splineTo(new Vector2d(-12, -14*side), Math.toRadians(-30*side))
+                        .splineToSplineHeading(new Pose2d(-21, -14*side, Math.toRadians(150*side)), Math.toRadians(-30*side))
                         .build();
 
                 park = drive.trajectorySequenceBuilder(toJunction.end())
@@ -130,43 +141,82 @@ public class Auto extends LinearOpMode {
         waitForStart();
         camera.stopStreaming();
         // Start of actual auto instructions
-        if (opModeIsActive()){
-            // Auto code
-            scoringMech.closeClaw(); // Grip the preload
-            sleep((long) Arm.clawActuationTime);
-            // Move the v4b vertical to save time when scoring and stop the cone from dragging on the ground
-            scoringMech.preMoveV4b();
-            // Drive off and score the preload
-            drive.followTrajectorySequence(driveToPreloadPos);
-            scoringMech.score(Lift.mediumPos);
+        actionTimer.reset();
+        while (opModeIsActive()){
+            // One big fsm
+            switch (autoState){
+                case GRABBING_PRELOAD:
+                    // Grab the preload
+                    scoringMech.closeClaw();
+                    // Once the claw is shut, premove the v4b, then move on to the next state
+                    if (actionTimer.milliseconds() > Arm.clawActuationTime){
+                        scoringMech.preMoveV4b();
+                        // Set the drive on it's next trajectory
+                        drive.followTrajectorySequenceAsync(driveToPreloadPos);
+                        actionTimer.reset();
+                        autoState = AutoState.SCORING_PRELOAD;
+                    }
+                    break;
 
-            drive.followTrajectorySequenceAsync(toStackFromPreload);
-            // While the claw sees no cone, drive to the stack
-            while(!scoringMech.getConeStatus()){
-                drive.update();
-                scoringMech.grabOffStackAsync(4, scoringMech.getConeStatus());
+                case SCORING_PRELOAD:
+                        if (actionTimer.seconds() > 2){
+                            scoringMech.scoreAsync(Lift.mediumPos);
+                        }
+                        if (scoringMech.getScoringState() == AutoScoringMech.ScoringState.DONE){
+                            // Send it off again
+                            drive.followTrajectorySequenceAsync(toStackFromPreload);
+                            actionTimer.reset();
+                            // Reset the scoring fsm so it can run again next time
+                            scoringMech.resetScoringState();
+                            autoState = AutoState.TO_STACK_FROM_PRELOAD;
+                        }
+                    break;
+
+                case TO_STACK_FROM_PRELOAD:
+                    scoringMech.grabOffStackAsync(4, !drive.isBusy());
+                    if (!drive.isBusy()){
+                        actionTimer.reset();
+                        autoState = AutoState.WAITING_FOR_CONE_GRAB;
+                    }
+                    break;
+
+                case WAITING_FOR_CONE_GRAB:
+                    scoringMech.grabOffStackAsync(4, !drive.isBusy());
+                    if (actionTimer.seconds() > 1){
+                        drive.followTrajectorySequenceAsync(toJunction);
+                        actionTimer.reset();
+                        scoringMech.resetStackGrabbingState();
+                        autoState = AutoState.TO_JUNCTION;
+                    }
+                    break;
+
+                case TO_JUNCTION:
+                        if (actionTimer.seconds() > 3){
+                            scoringMech.scoreAsync(Lift.highPos);
+                        }
+                        if (scoringMech.getScoringState() == AutoScoringMech.ScoringState.DONE){
+                            drive.followTrajectorySequenceAsync(park);
+                            scoringMech.resetScoringState();
+                            actionTimer.reset();
+                            autoState = AutoState.PARKING;
+                        }
+                    break;
+
+                case PARKING:
+                    // Yay, done
+                    break;
             }
-            // Cancel the toStack trajectory
-            drive.breakFollowing();
-            while(!(scoringMech.getStackGrabbingState() == AutoScoringMech.StackGrabbingState.DONE)){
-                scoringMech.grabOffStackAsync(4, scoringMech.getConeStatus());
-            }
-            // Update the toJunction trajectory
-            toJunction = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .lineTo(new Vector2d(-30, -12*side))
-                    .splineToSplineHeading(new Pose2d(-21, -14*side, Math.toRadians(150*side)), Math.toRadians(-30*side))
-                    .build();
 
-            // Score that cone we picked up
-            drive.followTrajectorySequence(toJunction);
-            scoringMech.resetScoringState();
-            scoringMech.score(Lift.highPos);
+            // Update all the things
+            drive.update();
 
-            drive.followTrajectorySequence(park); // Big 20 points
-
-            // Save this stuff at the end to calibrate feild centric automatically
+            // Save this stuff to calibrate feild centric automatically
             AutoToTele.endOfAutoPose = drive.getPoseEstimate();
             AutoToTele.endOfAutoHeading = drive.getExternalHeading();
+
+            // Show telemetry because there are plenty of bugs it should help me fix
+            scoringMech.displayDebug(telemetry);
+            telemetry.update();
         }
     }
 }
