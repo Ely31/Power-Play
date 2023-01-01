@@ -32,8 +32,8 @@ public class ScoringMech {
     public static double[] stackPose0 = {Arm.pivotGrabbingPos + 0,     0};
     public static double[] stackPose1 = {Arm.pivotGrabbingPos + 0.01,  1.2};
     public static double[] stackPose2 = {Arm.pivotGrabbingPos + 0.02,  2};
-    public static double[] stackPose3 = {Arm.pivotGrabbingPos + 0.03,  3};
-    public static double[] stackPose4 = {Arm.pivotGrabbingPos + 0.04,  3.5};
+    public static double[] stackPose3 = {Arm.pivotGrabbingPos + 0.03,  2.6};
+    public static double[] stackPose4 = {Arm.pivotGrabbingPos + 0.04,  3};
 
     public void setRetractedGrabbingPose(double[] pose){
         arm.setPivotGrabbingPos(pose[0]);

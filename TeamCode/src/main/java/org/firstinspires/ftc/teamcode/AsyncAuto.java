@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.util.AutoToTele;
+import org.firstinspires.ftc.teamcode.util.TimeUtil;
 import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 
 //this autonomous is meant for if you start on the left side of the field
@@ -27,6 +28,7 @@ public class AsyncAuto extends LinearOpMode {
     PivotingCamera camera;
     SignalPipeline signalPipeline = new SignalPipeline();
     AutoScoringMech scoringMech;
+    TimeUtil timeUtil = new TimeUtil();
 
     int side = 1;
     String sidename;
@@ -39,8 +41,11 @@ public class AsyncAuto extends LinearOpMode {
     Pose2d preloadScoringPos;
     TrajectorySequence driveToPreloadPos;
     TrajectorySequence toStackFromPreload;
+    TrajectorySequence toStack;
     double grabApproachVelo = 10;
+    double stackGrabbingTime = 0.6;
     TrajectorySequence toJunction;
+    TrajectorySequence toCloseHighJunction;
     TrajectorySequence park;
 
     enum AutoState{
@@ -48,7 +53,13 @@ public class AsyncAuto extends LinearOpMode {
         SCORING_PRELOAD,
         TO_STACK_FROM_PRELOAD,
         WAITING_FOR_CONE_GRAB,
-        TO_JUNCTION,
+        TO_JUNCTION1,
+        TO_STACK1,
+        WAITING_FOR_CONE_GRAB2,
+        TO_JUNCTION2,
+        TO_STACK2,
+        WAITING_FOR_CONE_GRAB3,
+        TO_JUNCTION3,
         PARKING
     }
     AutoState autoState = AutoState.GRABBING_PRELOAD;
@@ -63,6 +74,7 @@ public class AsyncAuto extends LinearOpMode {
         // Juice telemetry speed
         telemetry.setMsTransmissionInterval(100);
 
+        ElapsedTime loopTimer = new ElapsedTime();
         ElapsedTime pipelineThrottle = new ElapsedTime(100000000);
         ElapsedTime actionTimer = new ElapsedTime();
 
@@ -108,7 +120,7 @@ public class AsyncAuto extends LinearOpMode {
                 }
 
                 // Update trajectories
-                preloadScoringPos = new Pose2d(-37, -7*side, Math.toRadians(131*side));
+                preloadScoringPos = new Pose2d(-37.5, -6.5*side, Math.toRadians(131*side));
 
                 driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
                         .lineToSplineHeading(preloadScoringPos)
@@ -123,10 +135,21 @@ public class AsyncAuto extends LinearOpMode {
 
                 toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
                         .lineTo(new Vector2d(-35, -12*side))
-                        .splineToSplineHeading(new Pose2d(-22.5, -12*side, Math.toRadians(150*side)), Math.toRadians(0*side))
+                        .splineToSplineHeading(new Pose2d(-21, -12*side, Math.toRadians(150*side)), Math.toRadians(0*side))
                         .build();
 
-                park = drive.trajectorySequenceBuilder(toJunction.end())
+                toStack = drive.trajectorySequenceBuilder(toJunction.end())
+                        .setTangent(Math.toRadians(180*side))
+                        .splineToSplineHeading(new Pose2d(-58,-12.1*side, Math.toRadians(180*side)), Math.toRadians(180*side))
+                        .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
+                        .lineTo(new Vector2d(-63.5, -12.1*side))
+                        .build();
+
+                toCloseHighJunction = drive.trajectorySequenceBuilder(toStack.end())
+                        .lineToSplineHeading(new Pose2d(-41.5, -12*side, Math.toRadians(-144)))
+                        .build();
+
+                park = drive.trajectorySequenceBuilder(toCloseHighJunction.end())
                         .lineToSplineHeading(parkPos)
                         .build();
 
@@ -141,9 +164,12 @@ public class AsyncAuto extends LinearOpMode {
         }
 
         waitForStart();
+
         camera.stopStreaming();
         // Start of actual auto instructions
         actionTimer.reset();
+        loopTimer.reset();
+
         while (opModeIsActive()){
             // One big fsm
             switch (autoState){
@@ -163,9 +189,9 @@ public class AsyncAuto extends LinearOpMode {
 
                 case SCORING_PRELOAD:
                         if (actionTimer.seconds() > 2){
-                            scoringMech.scoreAsync(Lift.mediumPos);
+                            scoringMech.scoreAsync(Lift.mediumPos + 0.5);
                         }
-                        if (scoringMech.getScoringState() == AutoScoringMech.ScoringState.DONE){
+                        if (liftIsMostlyDown()){
                             // Send it off again
                             drive.followTrajectorySequenceAsync(toStackFromPreload);
                             actionTimer.reset();
@@ -185,45 +211,117 @@ public class AsyncAuto extends LinearOpMode {
 
                 case WAITING_FOR_CONE_GRAB:
                     scoringMech.grabOffStackAsync(4, !drive.isBusy());
-                    if (actionTimer.seconds() > 1){
+                    if (actionTimer.seconds() > stackGrabbingTime){
                         drive.followTrajectorySequenceAsync(toJunction);
                         actionTimer.reset();
                         scoringMech.resetStackGrabbingState();
                         scoringMech.setRetractedGrabbingPose(0);
-                        autoState = AutoState.TO_JUNCTION;
+                        autoState = AutoState.TO_JUNCTION1;
                     }
                     break;
 
-                case TO_JUNCTION:
+                case TO_JUNCTION1:
                         if (actionTimer.seconds() > 1.7){
-                            scoringMech.scoreAsync(Lift.highPos);
+                            scoringMech.scoreAsync(Lift.highPos + 0.5);
                         }
-                        if (scoringMech.getScoringState() == AutoScoringMech.ScoringState.DONE){
-                            drive.followTrajectorySequenceAsync(park);
+                        if (liftIsMostlyDown()){
+                            drive.followTrajectorySequenceAsync(toStack);
                             scoringMech.resetScoringState();
                             actionTimer.reset();
-                            autoState = AutoState.PARKING;
+                            autoState = AutoState.TO_STACK1;
                         }
+                    break;
+
+                case TO_STACK1:
+                    scoringMech.grabOffStackAsync(3, !drive.isBusy());
+                    if (!drive.isBusy()){
+                        actionTimer.reset();
+                        autoState = AutoState.WAITING_FOR_CONE_GRAB2;
+                    }
+                    break;
+
+                case WAITING_FOR_CONE_GRAB2:
+                    scoringMech.grabOffStackAsync(3, !drive.isBusy());
+                    if (actionTimer.seconds() > stackGrabbingTime){
+                        drive.followTrajectorySequenceAsync(toJunction);
+                        actionTimer.reset();
+                        scoringMech.resetStackGrabbingState();
+                        scoringMech.setRetractedGrabbingPose(0);
+                        autoState = AutoState.TO_JUNCTION2;
+                    }
+                    break;
+
+                case TO_JUNCTION2:
+                    if (actionTimer.seconds() > 1.7){
+                        scoringMech.scoreAsync(Lift.highPos + 0.5);
+                    }
+                    if (liftIsMostlyDown()){
+                        drive.followTrajectorySequenceAsync(toStack);
+                        scoringMech.resetScoringState();
+                        actionTimer.reset();
+                        autoState = AutoState.TO_STACK2;
+                    }
+                    break;
+
+                case TO_STACK2:
+                    scoringMech.grabOffStackAsync(2, !drive.isBusy());
+                    if (!drive.isBusy()){
+                        actionTimer.reset();
+                        autoState = AutoState.WAITING_FOR_CONE_GRAB3;
+                    }
+                    break;
+
+                case WAITING_FOR_CONE_GRAB3:
+                    scoringMech.grabOffStackAsync(2, !drive.isBusy());
+                    if (actionTimer.seconds() > stackGrabbingTime){
+                        drive.followTrajectorySequenceAsync(toCloseHighJunction);
+                        actionTimer.reset();
+                        scoringMech.resetStackGrabbingState();
+                        scoringMech.setRetractedGrabbingPose(0);
+                        autoState = AutoState.TO_JUNCTION3;
+                    }
+                    break;
+
+                case TO_JUNCTION3:
+                    if (actionTimer.seconds() > 1.2){
+                        scoringMech.scoreAsync(Lift.highPos + 0.5);
+                    }
+                    if (liftIsMostlyDown()){
+                        drive.followTrajectorySequenceAsync(park);
+                        scoringMech.resetScoringState();
+                        actionTimer.reset();
+                        autoState = AutoState.PARKING;
+                    }
                     break;
 
                 case PARKING:
                     // Yay, done
-                    scoringMech.updateLift();
+                    // Once the bot is parked, stop the OpMode
+                    if (!drive.isBusy()){
+                        stop();
+                    }
                     break;
             }
-
             // Update all the things
             drive.update();
+            scoringMech.updateLift();
+            timeUtil.update(loopTimer.milliseconds());
 
             // Save this stuff to calibrate feild centric automatically
             AutoToTele.endOfAutoPose = drive.getPoseEstimate();
             AutoToTele.endOfAutoHeading = drive.getExternalHeading();
 
             // Show telemetry because there are plenty of bugs it should help me fix
-            scoringMech.displayDebug(telemetry);
+            telemetry.addData("loop time", timeUtil.getAverageLoopTime());
+            scoringMech.displayAutoMechDebug(telemetry);
             telemetry.update();
         }
     }
+
+    boolean liftIsMostlyDown(){
+        return scoringMech.getScoringState() == AutoScoringMech.ScoringState.RETRACTING && scoringMech.getLiftHeight() < 8;
+    }
+
 }
 
 //luke was here

@@ -12,6 +12,8 @@ import com.noahbres.meepmeep.roadrunner.trajectorysequence.TrajectorySequence;
 
 public class MeepMeep1 {
 
+    static int side = 1;
+
     public static void main(String[] args) {
 
         System.setProperty("sun.java2d.opengl", "true");
@@ -37,11 +39,11 @@ public class MeepMeep1 {
                 .setDimensions(15,15)
                 .setColorScheme(new ColorSchemeBlueDark())
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-37, -7, Math.toRadians(133)))
-                                .setTangent(Math.toRadians(-120))
-                                .splineToSplineHeading(new Pose2d(-55,-12.5, Math.toRadians(180)), Math.toRadians(180))
-                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(5, Math.toRadians(180), 13.2))
-                                .lineTo(new Vector2d(-64, -12.5))
+                        drive.trajectorySequenceBuilder(new Pose2d(-21, -12*side, Math.toRadians(150*side)))
+                                .setTangent(Math.toRadians(180*side))
+                                .splineToSplineHeading(new Pose2d(-58,-12.2*side, Math.toRadians(180*side)), Math.toRadians(180*side))
+                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(10, Math.toRadians(180), 13.2))
+                                .lineTo(new Vector2d(-64, -12.2*side))
                                 .build()
                 );
 

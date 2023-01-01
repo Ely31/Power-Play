@@ -45,6 +45,7 @@ public class AutoScoringMech extends ScoringMech{
     }
 
     public void grabOffStackAsync(int coneNumber, boolean hasCone){
+        // You have to call updateLift while using this for it to work
         switch (stackGrabbingState){
             case CREEPING:
                 openClaw();
@@ -69,12 +70,12 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
         }
-        updateLift();
     }
 
     public void grabOffStack(int coneNumber, boolean hasCone){
         while (!(stackGrabbingState == StackGrabbingState.DONE)) {
             grabOffStackAsync(coneNumber, hasCone);
+            updateLift();
         }
     }
     // Have to call this before grabbing off the stack again to kick start the fsm
@@ -83,6 +84,7 @@ public class AutoScoringMech extends ScoringMech{
     }
 
     public void scoreAsync(double height){
+        // You have to call updateLift while using this for it to work
         switch (scoringState){
             case EXTENDING:
                 lift.setHeight(height);
@@ -94,7 +96,7 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case WAITING_FOR_V4B_EXTEND:
-                if (scoringWait.seconds() > 1){ // Wait for the v4b to move all the way
+                if (scoringWait.seconds() > 0.65){ // Wait for the v4b to move all the way
                     arm.openClaw(); // Drop the cone
                     scoringWait.reset();
                     scoringState = ScoringState.WAITING_FOR_CONE_DROP;
@@ -113,21 +115,20 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case RETRACTING:
-                retractLift(); // Bring the lift down
+                lift.setHeight(0); // Bring the lift down
                 // Move on if the lift is all the way down
-                if (Utility.withinErrorOfValue(lift.getHeight(), Lift.retractedPos, 0.5)) {
+                if (Utility.withinErrorOfValue(lift.getHeight(), 0, 1)) {
                     scoringState = ScoringState.DONE; // Finish
                 }
                 break;
         }
-        // Always update the lift, no matter what state of scoring it's in
-        updateLift();
     }
 
     public void score(double height){
         // While it isn't finished scoring, run an FSM
         while (!(scoringState == ScoringState.DONE)){
             scoreAsync(height);
+            updateLift();
         }
     }
     // Have to call this before scoring again to get the state machine to run
@@ -135,8 +136,9 @@ public class AutoScoringMech extends ScoringMech{
         scoringState = ScoringState.EXTENDING;
     }
 
-    public void displayDebug(Telemetry telemetry){
+    public void displayAutoMechDebug(Telemetry telemetry){
         telemetry.addData("scoring state", scoringState.name());
         telemetry.addData("grabbing state", stackGrabbingState.name());
+        displayDebug(telemetry);
     }
 }
