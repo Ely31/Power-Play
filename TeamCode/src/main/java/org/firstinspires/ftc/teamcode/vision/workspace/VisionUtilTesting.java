@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.vision.opmodes;
+package org.firstinspires.ftc.teamcode.vision.workspace;
 
 import org.firstinspires.ftc.teamcode.vision.workspace.VisionUtil;
 import org.opencv.core.Core;
