@@ -23,14 +23,12 @@ public class AutoConfigUtil {
     public int getNumCycles() {return numCycles;}
     public void setNumCycles(int numCycles) {this.numCycles = numCycles;}
 
-
-    int visionResult = 2;
-    public int getVisionResult() {return visionResult;}
-    public void setVisionResult(int visionResult) {this.visionResult = visionResult;}
-
     int parkZone = 2;
+    public int getParkZone() {
+        return parkZone;
+    }
 
-    void visionResultToParkZone(){
+    public void updateParkZoneFromVisionResult(int visionResult){
         switch(visionResult){
             case 1:
                 // Switch 1 and 3 if we're on blue terminal

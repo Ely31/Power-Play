@@ -3,26 +3,74 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.util.AutoConfigUtil;
+import org.firstinspires.ftc.teamcode.util.AutoToTele;
+
+import java.util.Random;
 
 public class AutoConstants {
-    AutoConfigUtil autoConfigUtil = new AutoConfigUtil();
     SampleMecanumDrive drive;
-
-    int side = autoConfigUtil.getAllianceSide();
-
-    double grabApproachVelo = 10;
-
-    // Stored pose info to be accesed in teleop
-    public static Pose2d endOfAutoPose = new Pose2d(0,0, Math.toRadians(-90));
-
     // Constructor
     public AutoConstants(SampleMecanumDrive drive){
         this.drive = drive;
     }
+
+    // 1 is red or left, -1 is blue or right
+    int side = 1;
+    public int getSide() {return side;}
+    public void setSide(int side) {this.side = side;}
+
+    public boolean sideToBool(){
+        return side != 1;
+    }
+    public String sideToString(){
+        if (side == 1) return "Left, red terminal";
+        else return "Right, blue terminal";
+    }
+
+    int numCycles = 1;
+    public int getNumCycles() {return numCycles;}
+    public void setNumCycles(int numCycles) {this.numCycles = numCycles;}
+
+    int parkZone = 2;
+    public int getParkZone() {
+        return parkZone;
+    }
+
+    public void updateParkZoneFromVisionResult(int visionResult){
+        switch(visionResult){
+            case 1:
+                // Switch 1 and 3 if we're on blue terminal
+                if (getSide() == 1){
+                    parkZone = 1;
+                } else {
+                    parkZone = 3;
+                }
+                break;
+            case 2:
+                // We don't have to change the middle positon however
+                parkZone = 2;
+                break;
+            case 3:
+                // Switch 3 and 1 if we're on blue terminal
+                if (getSide() == 1) {
+                    parkZone = 3;
+                } else {
+                    parkZone = 1;
+                }
+                break;
+        }
+    }
+
+    public double grabApproachVelo = 10;
+    public double stackGrabbingTime = 0.6;
+
+    // Stored pose info to be accesed in teleop
+    public static Pose2d endOfAutoPose = new Pose2d(0,0, Math.toRadians(-90));
+
 
     // Pose2d's
     public Pose2d startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
@@ -70,10 +118,46 @@ public class AutoConstants {
             .build();
 
     public TrajectorySequence toCloseHighJunction = drive.trajectorySequenceBuilder(toStack.end())
-            .lineToSplineHeading(new Pose2d(-41.5, -12*side, Math.toRadians(-144)))
+            .lineToSplineHeading(new Pose2d(-41.5, -12*side, Math.toRadians(-144*side)))
             .build();
 
     public TrajectorySequence park = drive.trajectorySequenceBuilder(toCloseHighJunction.end())
             .lineToSplineHeading(parkPos)
             .build();
+
+
+    // Telemetry stuff
+    public void addTelemetry(Telemetry telemetry){
+        telemetry.addLine(sideToString());
+        telemetry.addData("Alliance side as integer", AutoToTele.allianceSide);
+        telemetry.addData("park zone", parkZone);
+        telemetry.addLine(ramdomAutoCheckMessage());
+    }
+
+    String ramdomAutoCheckMessage(){
+        // Generate a random number and look up that index in the array of messages
+        String[] list = {
+                "CHECK THE AUTO, REMEMBER NANO FINALS 3!",
+                "Run the right auto kids!",
+                "Is it red? is it blue?",
+                "Is it left? is it right?",
+                "Are you SURE this is the program you want?",
+                "Ejecute el auto correcto!",
+                "올바른 자동 실행",
+                "Oi mate, didjya checkit eh?",
+                "What do those numbers say, hmmmm? Hmmmm?",
+                "C'mon man, just take a second to read the stuff",
+                "运行正确的自动",
+                "Don't waste the potential of this bot",
+                "How many cycles are we doin'?",
+                "Where are we parkin'?",
+                "Look. At. The. Side.",
+                "Look at the bot, now look at the screen",
+                "(insert mildly funny comment about auto)",
+                "ELYYYYY...",
+                "LUUUKEE...",
+                ":)"
+        };
+        return list[new Random().nextInt(list.length)];
+    }
 }
