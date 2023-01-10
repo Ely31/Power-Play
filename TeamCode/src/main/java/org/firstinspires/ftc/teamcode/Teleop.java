@@ -53,6 +53,9 @@ public class Teleop extends LinearOpMode {
 
     public static double liftPosEditStep = 0.15;
 
+    // Behavior configuration
+    public static boolean autoRetract = true;
+
     // Telemetry options
     public static boolean debug = true;
     public static boolean instructionsOn = false;

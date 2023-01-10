@@ -136,6 +136,10 @@ public class AutoScoringMech extends ScoringMech{
         scoringState = ScoringState.EXTENDING;
     }
 
+    public boolean liftIsMostlyDown(){
+        return getScoringState() == AutoScoringMech.ScoringState.RETRACTING && getLiftHeight() < 12;
+    }
+
     public void displayAutoMechDebug(Telemetry telemetry){
         telemetry.addData("scoring state", scoringState.name());
         telemetry.addData("grabbing state", stackGrabbingState.name());

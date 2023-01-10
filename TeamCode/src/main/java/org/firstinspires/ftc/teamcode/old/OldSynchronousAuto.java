@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.old;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 //regular is the red side of the field, -1 is blue side of the field
 @Config
 @Autonomous
-public class Auto extends LinearOpMode {
+public class OldSynchronousAuto extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
     PivotingCamera camera;

@@ -7,15 +7,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.Camera;
 import org.firstinspires.ftc.teamcode.vision.workspace.ImageToTelemetryPipeline;
+import org.firstinspires.ftc.teamcode.vision.workspace.ImageToTelemetryPipeline2;
 
 @TeleOp(group = "test")
-public class ImageToTelemetryTest extends LinearOpMode {
+public class ImageToTelemetry extends LinearOpMode {
     // Pre-init
     Camera camera;
-    ImageToTelemetryPipeline pipeline = new ImageToTelemetryPipeline();
+    ImageToTelemetryPipeline2 pipeline = new ImageToTelemetryPipeline2();
     ElapsedTime processImageThrottle = new ElapsedTime();
 
-    int refreshRate = 600; // In milliseconds
+    int refreshRate = 300; // In milliseconds
 
     @Override
     public void runOpMode() {
@@ -31,10 +32,8 @@ public class ImageToTelemetryTest extends LinearOpMode {
         while (opModeIsActive()) {
             // Autonomous instructions
             if (processImageThrottle.milliseconds() > refreshRate) {
-                // Write all the rows of pixels out in telemetry
-                for (int i = 0; i < pipeline.imageHeight; i++) {
-                    telemetry.addLine(pipeline.rowToDisplayPixels(i));
-                }
+                // Print to telemetry once the throttle time is up
+                pipeline.toTelemetry(telemetry);
                 telemetry.update();
                 // Reset the timer so it loops
                 processImageThrottle.reset();

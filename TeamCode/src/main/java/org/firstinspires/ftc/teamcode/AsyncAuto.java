@@ -191,7 +191,7 @@ public class AsyncAuto extends LinearOpMode {
                         if (actionTimer.seconds() > 2){
                             scoringMech.scoreAsync(Lift.mediumPos + 0.5);
                         }
-                        if (liftIsMostlyDown()){
+                        if (scoringMech.liftIsMostlyDown()){
                             // Send it off again
                             drive.followTrajectorySequenceAsync(toStackFromPreload);
                             actionTimer.reset();
@@ -224,7 +224,7 @@ public class AsyncAuto extends LinearOpMode {
                         if (actionTimer.seconds() > 1.7){
                             scoringMech.scoreAsync(Lift.highPos + 0.5);
                         }
-                        if (liftIsMostlyDown()){
+                        if (scoringMech.liftIsMostlyDown()){
                             drive.followTrajectorySequenceAsync(toStack);
                             scoringMech.resetScoringState();
                             actionTimer.reset();
@@ -255,7 +255,7 @@ public class AsyncAuto extends LinearOpMode {
                     if (actionTimer.seconds() > 1.7){
                         scoringMech.scoreAsync(Lift.highPos + 0.5);
                     }
-                    if (liftIsMostlyDown()){
+                    if (scoringMech.liftIsMostlyDown()){
                         drive.followTrajectorySequenceAsync(toStack);
                         scoringMech.resetScoringState();
                         actionTimer.reset();
@@ -286,7 +286,7 @@ public class AsyncAuto extends LinearOpMode {
                     if (actionTimer.seconds() > 1.2){
                         scoringMech.scoreAsync(Lift.highPos + 0.5);
                     }
-                    if (liftIsMostlyDown()){
+                    if (scoringMech.liftIsMostlyDown()){
                         drive.followTrajectorySequenceAsync(park);
                         scoringMech.resetScoringState();
                         actionTimer.reset();
@@ -317,11 +317,6 @@ public class AsyncAuto extends LinearOpMode {
             telemetry.update();
         }
     }
-
-    boolean liftIsMostlyDown(){
-        return scoringMech.getScoringState() == AutoScoringMech.ScoringState.RETRACTING && scoringMech.getLiftHeight() < 8;
-    }
-
 }
 
 //luke was here
