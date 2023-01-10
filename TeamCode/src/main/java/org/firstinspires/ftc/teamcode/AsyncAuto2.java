@@ -25,9 +25,13 @@ public class AsyncAuto2 extends LinearOpMode {
     SignalPipeline signalPipeline = new SignalPipeline();
     AutoScoringMech scoringMech;
 
-    AutoConstants autoConstants = new AutoConstants(drive);
+    AutoConstants autoConstants;
 
     int cycleIndex = 0;
+
+    // For the rising egde detectors
+    boolean prevCycleIncrease = false;
+    boolean prevCycleDecrease = false;
 
     // For the giant fsm to run everything asynchronously
     enum AutoState{
@@ -47,10 +51,11 @@ public class AsyncAuto2 extends LinearOpMode {
         drive = new SampleMecanumDrive(hardwareMap);
         scoringMech = new AutoScoringMech(hardwareMap);
         camera = new PivotingCamera(hardwareMap, signalPipeline);
+        autoConstants = new AutoConstants(drive);
         // Juice telemetry speed
         telemetry.setMsTransmissionInterval(100);
 
-        ElapsedTime pipelineThrottle = new ElapsedTime(100000000);
+        ElapsedTime pipelineThrottle = new ElapsedTime();
         ElapsedTime actionTimer = new ElapsedTime();
 
         // Init loop
@@ -58,12 +63,18 @@ public class AsyncAuto2 extends LinearOpMode {
             // Configure the alliance with the gamepad
             if (gamepad1.circle) autoConstants.setSide(1); // Red alliance
             if (gamepad1.cross) autoConstants.setSide(-1); // Blue alliance
+            // Rising edge detectors
+            if (gamepad1.dpad_up && !prevCycleIncrease) autoConstants.setNumCycles(autoConstants.getNumCycles() + 1);
+            if (gamepad1.dpad_down && !prevCycleDecrease) autoConstants.setNumCycles(autoConstants.getNumCycles() - 1);
+            prevCycleIncrease = gamepad1.dpad_up;
+            prevCycleDecrease = gamepad1.dpad_down;
 
             // Recompute trajectories every second
             if (pipelineThrottle.seconds() > 1){
                 // Update stuff
                 autoConstants.updateParkZoneFromVisionResult(signalPipeline.getParkPos());
                 autoConstants.updateParkPos(autoConstants.getParkZone());
+                autoConstants.updateTrajectories();
 
                 drive.setPoseEstimate(autoConstants.startPos);
                 // Display auto configuration to telemetry
@@ -96,7 +107,7 @@ public class AsyncAuto2 extends LinearOpMode {
                     break;
 
                 case SCORING_PRELOAD:
-                        if (actionTimer.seconds() > 2){
+                        if (actionTimer.seconds() > 1.9){
                             scoringMech.scoreAsync(Lift.mediumPos + 0.5);
                         }
                         if (scoringMech.liftIsMostlyDown()){
@@ -106,7 +117,7 @@ public class AsyncAuto2 extends LinearOpMode {
                             // Reset the scoring fsm so it can run again next time
                             scoringMech.resetScoringState();
                             // Start the first cycle
-                            if (cycleIndex > autoConstants.getNumCycles()) autoState = AutoState.TO_STACK;
+                            if (cycleIndex < autoConstants.getNumCycles()) autoState = AutoState.TO_STACK;
                             // If we don't want to do any cycles, park
                             else autoState = AutoState.PARKING;
                         }
@@ -132,18 +143,23 @@ public class AsyncAuto2 extends LinearOpMode {
                     break;
 
                 case TO_JUNCTION:
-                        if (actionTimer.seconds() > 1.7){
+                        if (actionTimer.seconds() > 1.5){
                             scoringMech.scoreAsync(Lift.highPos + 0.5);
                         }
                         if (scoringMech.liftIsMostlyDown()){
-                            drive.followTrajectorySequenceAsync(autoConstants.toStack);
                             scoringMech.resetScoringState();
                             actionTimer.reset();
                             // Tell the code we made another cycle
                             cycleIndex ++;
                             // If we've done enough cycles, park
-                            if (cycleIndex > autoConstants.getNumCycles()) autoState = AutoState.TO_STACK;
-                            else autoState = AutoState.PARKING;
+                            if (cycleIndex < autoConstants.getNumCycles()) {
+                                drive.followTrajectorySequenceAsync(autoConstants.toStack);
+                                autoState = AutoState.TO_STACK;
+                            }
+                            else {
+                                drive.followTrajectorySequenceAsync(autoConstants.park);
+                                autoState = AutoState.PARKING;
+                            }
                         }
                     break;
 

@@ -65,7 +65,7 @@ public class AutoConstants {
         }
     }
 
-    public double grabApproachVelo = 10;
+    public double grabApproachVelo = 20;
     public double stackGrabbingTime = 0.6;
 
     // Stored pose info to be accesed in teleop
@@ -92,45 +92,49 @@ public class AutoConstants {
         parkPos = parkPositions[posIndex-1];
     }
 
+    public TrajectorySequence driveToPreloadPos;
+    public TrajectorySequence toStackFromPreload;
+    public TrajectorySequence toJunction;
+    public TrajectorySequence toStack;
+    public TrajectorySequence park;
 
-    // Trajectories
-    public TrajectorySequence driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
-            .lineToSplineHeading(preloadScoringPos)
-            .build();
 
-    public TrajectorySequence toStackFromPreload = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
-            .setTangent(Math.toRadians(-120*side))
-            .splineToSplineHeading(new Pose2d(-58,-12.2*side, Math.toRadians(180*side)), Math.toRadians(180*side))
-            .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-            .lineTo(new Vector2d(-64, -12.2*side))
-            .build();
+    public void updateTrajectories() {
+        // Trajectories
+        driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
+                .lineToSplineHeading(preloadScoringPos)
+                .build();
 
-    public TrajectorySequence toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-            .lineTo(new Vector2d(-35, -12*side))
-            .splineToSplineHeading(new Pose2d(-21, -12*side, Math.toRadians(150*side)), Math.toRadians(0*side))
-            .build();
+        toStackFromPreload = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
+                .setTangent(Math.toRadians(-120 * side))
+                .splineToSplineHeading(new Pose2d(-58, -12.2 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
+                .lineTo(new Vector2d(-64, -12.2 * side))
+                .build();
 
-    public TrajectorySequence toStack = drive.trajectorySequenceBuilder(toJunction.end())
-            .setTangent(Math.toRadians(180*side))
-            .splineToSplineHeading(new Pose2d(-58,-12.1*side, Math.toRadians(180*side)), Math.toRadians(180*side))
-            .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-            .lineTo(new Vector2d(-63.5, -12.1*side))
-            .build();
+        toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
+                .lineToSplineHeading(new Pose2d(-45, -11.5 * side, Math.toRadians(-148 * side)))
+                .build();
 
-    public TrajectorySequence toCloseHighJunction = drive.trajectorySequenceBuilder(toStack.end())
-            .lineToSplineHeading(new Pose2d(-41.5, -12*side, Math.toRadians(-144*side)))
-            .build();
+        toStack = drive.trajectorySequenceBuilder(toJunction.end())
+                .setTangent(Math.toRadians(180 * side))
+                .splineToSplineHeading(new Pose2d(-58, -12.1 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
+                .lineTo(new Vector2d(-64, -12.1 * side))
+                .build();
 
-    public TrajectorySequence park = drive.trajectorySequenceBuilder(toCloseHighJunction.end())
-            .lineToSplineHeading(parkPos)
-            .build();
+        park = drive.trajectorySequenceBuilder(toJunction.end())
+                .lineToSplineHeading(parkPos)
+                .build();
+    }
 
 
     // Telemetry stuff
     public void addTelemetry(Telemetry telemetry){
         telemetry.addLine(sideToString());
         telemetry.addData("Alliance side as integer", AutoToTele.allianceSide);
-        telemetry.addData("park zone", parkZone);
+        telemetry.addData("Park zone", parkZone);
+        telemetry.addData("Number of cycles", getNumCycles());
         telemetry.addLine(ramdomAutoCheckMessage());
     }
 
