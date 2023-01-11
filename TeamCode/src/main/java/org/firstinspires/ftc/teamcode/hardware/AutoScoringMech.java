@@ -89,9 +89,9 @@ public class AutoScoringMech extends ScoringMech{
             case EXTENDING:
                 lift.setHeight(height);
                 // Move on if the lift is all the way up
-                if (Utility.withinErrorOfValue(lift.getHeight(), height, 0.5)) {
-                    arm.scorePassthrough(); // Move the v4b over the junction
+                if (Utility.withinErrorOfValue(lift.getHeight(), height, 5)) {
                     scoringWait.reset();
+                    arm.scorePassthroughFlat(); // Move the v4b over the junction
                     scoringState = ScoringState.WAITING_FOR_V4B_EXTEND;
                 }
                 break;
@@ -103,7 +103,49 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case WAITING_FOR_CONE_DROP:
-                if (scoringWait.seconds() > 0.2){ // Wait for the cone to drop
+                if (scoringWait.seconds() > 0.1){ // Wait for the cone to drop
+                    arm.grabPassthrough(); // Move the v4b inside the bot
+                    scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_V4B_RETRACT;
+                }
+                break;
+            case WAITING_FOR_V4B_RETRACT:
+                if (scoringWait.milliseconds() > Arm.pivotActuationTime + 100){ // Wait for the v4b to retract all the way
+                    scoringState = ScoringState.RETRACTING;
+                }
+                break;
+            case RETRACTING:
+                lift.setHeight(0); // Bring the lift down
+                // Move on if the lift is all the way down
+                if (Utility.withinErrorOfValue(lift.getHeight(), 0, 1)) {
+                    scoringState = ScoringState.DONE; // Finish
+                }
+                break;
+        }
+    }
+
+    // This method is the same as scoreAsync but it extends the v4b and the lift at the same time
+    public void scoreQuickerAsync(double height){
+        // You have to call updateLift while using this for it to work
+        switch (scoringState){
+            case EXTENDING:
+                lift.setHeight(height);
+                arm.scorePassthrough(); // Move the v4b over the junction
+                // Move on if the lift is all the way up
+                if (Utility.withinErrorOfValue(lift.getHeight(), height, 0.5)) {
+                    scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_V4B_EXTEND;
+                }
+                break;
+            case WAITING_FOR_V4B_EXTEND:
+                if (scoringWait.seconds() > 0.2){ // Wait for the v4b to move all the way
+                    arm.openClaw(); // Drop the cone
+                    scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_CONE_DROP;
+                }
+                break;
+            case WAITING_FOR_CONE_DROP:
+                if (scoringWait.seconds() > 0.1){ // Wait for the cone to drop
                     arm.grabPassthrough(); // Move the v4b inside the bot
                     scoringWait.reset();
                     scoringState = ScoringState.WAITING_FOR_V4B_RETRACT;
@@ -137,7 +179,7 @@ public class AutoScoringMech extends ScoringMech{
     }
 
     public boolean liftIsMostlyDown(){
-        return getScoringState() == AutoScoringMech.ScoringState.RETRACTING && getLiftHeight() < 12;
+        return getScoringState() == AutoScoringMech.ScoringState.RETRACTING;
     }
 
     public void displayAutoMechDebug(Telemetry telemetry){

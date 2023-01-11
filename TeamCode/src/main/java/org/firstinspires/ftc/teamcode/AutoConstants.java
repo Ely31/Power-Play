@@ -31,7 +31,7 @@ public class AutoConstants {
         else return "Right, blue terminal";
     }
 
-    int numCycles = 1;
+    int numCycles = 4;
     public int getNumCycles() {return numCycles;}
     public void setNumCycles(int numCycles) {this.numCycles = numCycles;}
 
@@ -68,10 +68,6 @@ public class AutoConstants {
     public double grabApproachVelo = 20;
     public double stackGrabbingTime = 0.6;
 
-    // Stored pose info to be accesed in teleop
-    public static Pose2d endOfAutoPose = new Pose2d(0,0, Math.toRadians(-90));
-
-
     // Pose2d's
     public Pose2d startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
     public Pose2d preloadScoringPos = new Pose2d(-37.5, -6.5*side, Math.toRadians(131*side));
@@ -81,7 +77,7 @@ public class AutoConstants {
 
     public Pose2d[] parkPositions = {
             // Pos 1
-            new Pose2d(-57, -12*side, Math.toRadians(180*side)),
+            new Pose2d(-59, -12*side, Math.toRadians(180*side)),
             // Pos 2
             new Pose2d(-36, -12*side, Math.toRadians(180*side)),
             // Pos 3
@@ -126,6 +122,11 @@ public class AutoConstants {
         park = drive.trajectorySequenceBuilder(toJunction.end())
                 .lineToSplineHeading(parkPos)
                 .build();
+    }
+
+    public void saveAutoPose(){
+        AutoToTele.endOfAutoPose = drive.getPoseEstimate();
+        AutoToTele.endOfAutoHeading = drive.getPoseEstimate().getHeading();
     }
 
 

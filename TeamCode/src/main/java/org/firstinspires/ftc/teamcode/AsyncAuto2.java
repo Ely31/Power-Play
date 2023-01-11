@@ -10,8 +10,6 @@ import org.firstinspires.ftc.teamcode.hardware.Arm;
 import org.firstinspires.ftc.teamcode.hardware.AutoScoringMech;
 import org.firstinspires.ftc.teamcode.hardware.Lift;
 import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
-import org.firstinspires.ftc.teamcode.util.AutoConfigUtil;
-import org.firstinspires.ftc.teamcode.util.AutoToTele;
 import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 
 //this autonomous is meant for if you start on the left side of the field
@@ -107,7 +105,7 @@ public class AsyncAuto2 extends LinearOpMode {
                     break;
 
                 case SCORING_PRELOAD:
-                        if (actionTimer.seconds() > 1.9){
+                        if (actionTimer.seconds() > 1.7){
                             scoringMech.scoreAsync(Lift.mediumPos + 0.5);
                         }
                         if (scoringMech.liftIsMostlyDown()){
@@ -132,7 +130,7 @@ public class AsyncAuto2 extends LinearOpMode {
                     break;
 
                 case WAITING_FOR_CONE_GRAB:
-                    scoringMech.grabOffStackAsync(4-cycleIndex, !drive.isBusy());
+                    scoringMech.grabOffStackAsync(4-cycleIndex, true);
                     if (actionTimer.seconds() > autoConstants.stackGrabbingTime){
                         drive.followTrajectorySequenceAsync(autoConstants.toJunction);
                         actionTimer.reset();
@@ -143,10 +141,11 @@ public class AsyncAuto2 extends LinearOpMode {
                     break;
 
                 case TO_JUNCTION:
-                        if (actionTimer.seconds() > 1.5){
+                        if (actionTimer.seconds() > 0.5){
                             scoringMech.scoreAsync(Lift.highPos + 0.5);
                         }
                         if (scoringMech.liftIsMostlyDown()){
+                            scoringMech.retractLift();
                             scoringMech.resetScoringState();
                             actionTimer.reset();
                             // Tell the code we made another cycle
@@ -175,9 +174,8 @@ public class AsyncAuto2 extends LinearOpMode {
             drive.update();
             scoringMech.updateLift();
 
-            // Save this stuff to calibrate feild centric automatically
-            AutoToTele.endOfAutoPose = drive.getPoseEstimate();
-            AutoToTele.endOfAutoHeading = drive.getExternalHeading();
+            // To be used to automatically calibrate field centric
+            autoConstants.saveAutoPose();
 
             // Show telemetry because there are plenty of bugs it should help me fix
             telemetry.addData("cycle index", cycleIndex);
