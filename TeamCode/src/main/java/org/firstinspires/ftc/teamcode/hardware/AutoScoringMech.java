@@ -103,7 +103,7 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case WAITING_FOR_CONE_DROP:
-                if (scoringWait.seconds() > 0.1){ // Wait for the cone to drop
+                if (scoringWait.seconds() > 0.45){ // Wait for the cone to drop
                     arm.grabPassthrough(); // Move the v4b inside the bot
                     scoringWait.reset();
                     scoringState = ScoringState.WAITING_FOR_V4B_RETRACT;

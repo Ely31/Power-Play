@@ -70,18 +70,17 @@ public class AutoConstants {
 
     // Pose2d's
     public Pose2d startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
-    public Pose2d preloadScoringPos = new Pose2d(-37.5, -6.5*side, Math.toRadians(131*side));
 
     // Set parkPos to a default to avoid null issues
     public Pose2d parkPos = new Pose2d(-57, -12*side, Math.toRadians(180*side));
 
     public Pose2d[] parkPositions = {
             // Pos 1
-            new Pose2d(-59, -12*side, Math.toRadians(180*side)),
+            new Pose2d(-59, -10*side, Math.toRadians(180*side)),
             // Pos 2
-            new Pose2d(-36, -12*side, Math.toRadians(180*side)),
+            new Pose2d(-37, -10*side, Math.toRadians(180*side)),
             // Pos 3
-            new Pose2d(-11, -12*side, Math.toRadians(180*side))
+            new Pose2d(-13, -10*side, Math.toRadians(180*side))
     };
     public void updateParkPos(int posIndex){
         // Grab the correct pos from the array and set parkPos to it
@@ -98,7 +97,7 @@ public class AutoConstants {
     public void updateTrajectories() {
         // Trajectories
         driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
-                .lineToSplineHeading(preloadScoringPos)
+                .lineToSplineHeading(new Pose2d(-35.8, -8.2*side, Math.toRadians(128*side)))
                 .build();
 
         toStackFromPreload = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
@@ -109,14 +108,14 @@ public class AutoConstants {
                 .build();
 
         toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-                .lineToSplineHeading(new Pose2d(-45, -11.5 * side, Math.toRadians(-148 * side)))
+                .lineToSplineHeading(new Pose2d(-42.5, -11 * side, Math.toRadians(-146 * side)))
                 .build();
 
         toStack = drive.trajectorySequenceBuilder(toJunction.end())
                 .setTangent(Math.toRadians(180 * side))
                 .splineToSplineHeading(new Pose2d(-58, -12.1 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                .lineTo(new Vector2d(-64, -12.1 * side))
+                .lineTo(new Vector2d(-64.2, -12.1 * side))
                 .build();
 
         park = drive.trajectorySequenceBuilder(toJunction.end())

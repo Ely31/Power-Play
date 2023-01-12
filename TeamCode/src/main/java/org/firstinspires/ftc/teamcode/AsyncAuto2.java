@@ -105,8 +105,8 @@ public class AsyncAuto2 extends LinearOpMode {
                     break;
 
                 case SCORING_PRELOAD:
-                        if (actionTimer.seconds() > 1.7){
-                            scoringMech.scoreAsync(Lift.mediumPos + 0.5);
+                        if (actionTimer.seconds() > 1.9){
+                            scoringMech.scoreAsync(Lift.mediumPos - 1.5);
                         }
                         if (scoringMech.liftIsMostlyDown()){
                             // Send it off again
@@ -142,7 +142,7 @@ public class AsyncAuto2 extends LinearOpMode {
 
                 case TO_JUNCTION:
                         if (actionTimer.seconds() > 0.5){
-                            scoringMech.scoreAsync(Lift.highPos + 0.5);
+                            scoringMech.scoreAsync(Lift.highPos - 1);
                         }
                         if (scoringMech.liftIsMostlyDown()){
                             scoringMech.retractLift();

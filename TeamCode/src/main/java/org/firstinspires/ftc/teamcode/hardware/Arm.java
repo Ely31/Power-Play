@@ -33,7 +33,7 @@ public class Arm {
     public static double endMax = 1;
     public static double endGrabbingPos = 0.53;
     public static double endScoringPos = 0.35;
-    public static double endFlatScoringPos = 0.5;
+    public static double endFlatScoringPos = 0.45;
     public static double endGroundScoringPos = 0.45;
 
     public static double clawClosedPos = 0.93;

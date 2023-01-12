@@ -24,10 +24,6 @@ public class Teleop extends LinearOpMode {
     TeleMecDrive drive;
     double drivingSpeedMultiplier;
     ScoringMech scoringMech;
-    PivotingCamera camera;
-    JunctionBasedOnHubPipeline pipeline = new JunctionBasedOnHubPipeline();
-    public static PIDCoefficients trackingCoeffs = new PIDCoefficients(0.003,0.0001,0.0001);
-    PIDFController trackingController = new PIDFController(trackingCoeffs);
 
     ElapsedTime clawActuationTimer = new ElapsedTime();
     ElapsedTime pivotActuationTimer = new ElapsedTime();
@@ -58,17 +54,15 @@ public class Teleop extends LinearOpMode {
 
     // Telemetry options
     public static boolean debug = true;
-    public static boolean instructionsOn = false;
+    public static boolean instructionsOn = true;
 
     @Override
     public void runOpMode(){
         // Init
         telemetry.setMsTransmissionInterval(100);
         // Bind hardware to the hardwaremap
-        drive = new TeleMecDrive(hardwareMap, 0.2);
+        drive = new TeleMecDrive(hardwareMap, 0.35);
         scoringMech = new ScoringMech(hardwareMap);
-        camera = new PivotingCamera(hardwareMap, pipeline);
-        trackingController.setTargetPosition(0);
 
         waitForStart();
         matchTimer.reset();
@@ -81,26 +75,15 @@ public class Teleop extends LinearOpMode {
             // Relate the max speed of the bot to the height of the lift to prevent tipping
             drivingSpeedMultiplier = 1 - (scoringMech.getLiftHeight() * 0.035);
             // Drive the bot
-            // If we're tracking a junction and the lift is up, hand over control of turning to the camera and pid controller
-            if (trackingJunction && scoring) {
-                drive.driveFieldCentric(
-                        gamepad1.left_stick_x * drivingSpeedMultiplier,
-                        gamepad1.left_stick_y * drivingSpeedMultiplier,
-                        trackingController.update(-pipeline.getJunctionX()),
-                        gamepad1.right_trigger);
-            } else {
                 // Otherwise, drive normally
                 drive.driveFieldCentric(
                         gamepad1.left_stick_x * drivingSpeedMultiplier,
                         gamepad1.left_stick_y * drivingSpeedMultiplier,
                         gamepad1.right_stick_x * drivingSpeedMultiplier * 0.8,
                         gamepad1.right_trigger);
-            }
 
             if (gamepad1.share) drive.resetHeading();
 
-            // Make the camera point at the current junction height
-            camera.setJunction(scoringMech.getActiveScoringJunction());
             // Toggle junction tracking with start
             if (gamepad1.start && !prevTrackingJunctionInput) trackingJunction = !trackingJunction;
             prevTrackingJunctionInput = gamepad1.start;
