@@ -22,7 +22,7 @@ public class Arm {
     public static double leftOffset = 0.005;
 
     public static double pivotMax = 0.9;
-    public static double pivotMin = 0.04;
+    public static double pivotMin = 0.03;
     public static double pivotGrabbingPos = pivotMin;
     public static double pivotScoringPos = 0.65;
     public static double pivotGroundScoringPos = 0.875;

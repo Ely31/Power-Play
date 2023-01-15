@@ -76,7 +76,7 @@ public class AutoConstants {
 
     public Pose2d[] parkPositions = {
             // Pos 1
-            new Pose2d(-59, -10*side, Math.toRadians(180*side)),
+            new Pose2d(-61, -10*side, Math.toRadians(180*side)),
             // Pos 2
             new Pose2d(-37, -10*side, Math.toRadians(180*side)),
             // Pos 3
@@ -93,6 +93,9 @@ public class AutoConstants {
     public TrajectorySequence toStack;
     public TrajectorySequence park;
 
+    public TrajectorySequence toJunctionImproved;
+    public TrajectorySequence toStackFromPreloadImproved;
+
 
     public void updateTrajectories() {
         // Trajectories
@@ -104,7 +107,7 @@ public class AutoConstants {
                 .setTangent(Math.toRadians(-120 * side))
                 .splineToSplineHeading(new Pose2d(-58, -12.2 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                .lineTo(new Vector2d(-64, -12.2 * side))
+                .lineTo(new Vector2d(-64.7, -12.2 * side))
                 .build();
 
         toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
@@ -115,11 +118,22 @@ public class AutoConstants {
                 .setTangent(Math.toRadians(180 * side))
                 .splineToSplineHeading(new Pose2d(-58, -12.1 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                .lineTo(new Vector2d(-64.2, -12.1 * side))
+                .lineTo(new Vector2d(-64.7, -12.1 * side))
                 .build();
 
         park = drive.trajectorySequenceBuilder(toJunction.end())
                 .lineToSplineHeading(parkPos)
+                .build();
+
+        toJunctionImproved = drive.trajectorySequenceBuilder(toStackFromPreload.end())
+                .lineToSplineHeading(new Pose2d(-41, -13.5 * side, Math.toRadians(-137.5 * side)))
+                .build();
+
+        toStackFromPreloadImproved = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
+                .setTangent(Math.toRadians(-130 * side))
+                .splineToSplineHeading(new Pose2d(-58, -12.2 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
+                .lineTo(new Vector2d(-64.8, -12.2 * side))
                 .build();
     }
 
@@ -132,7 +146,7 @@ public class AutoConstants {
     // Telemetry stuff
     public void addTelemetry(Telemetry telemetry){
         telemetry.addLine(sideToString());
-        telemetry.addData("Alliance side as integer", AutoToTele.allianceSide);
+        telemetry.addData("Alliance side as integer", getSide());
         telemetry.addData("Park zone", parkZone);
         telemetry.addData("Number of cycles", getNumCycles());
         telemetry.addLine(ramdomAutoCheckMessage());

@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -20,6 +21,7 @@ import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 
 //this autonomous is meant for if you start on the left side of the field
 //regular is the red side of the field, -1 is blue side of the field
+@Disabled
 @Config
 @Autonomous
 public class AsyncAuto extends LinearOpMode {

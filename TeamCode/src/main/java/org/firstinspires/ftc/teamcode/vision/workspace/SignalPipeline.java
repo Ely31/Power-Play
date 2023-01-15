@@ -15,13 +15,13 @@ public class SignalPipeline extends OpenCvPipeline {
 
     private int averageColor = 135;
 
-    public static Point topLeft = new Point(CameraConstants.midpointX -7, 65);
-    public static Point bottomRight = new Point(CameraConstants.midpointX +7, 110);
+    public static Point topLeft = new Point(CameraConstants.midpointX + 0, 65);
+    public static Point bottomRight = new Point(CameraConstants.midpointX +14, 110);
     public static Rect focusedAreaRect = new Rect(topLeft, bottomRight);
 
-    public static double perfectMagenta = 131;
-    public static double perfectGreen = 48;
-    public static double perfectBlue = 82;
+    public static double perfectMagenta = 121;
+    public static double perfectGreen = 45;
+    public static double perfectBlue = 76;
     public static double colorTolerance = 15;
 
     @Override
