@@ -121,6 +121,13 @@ public class Lift {
         left.update();
         right.update();
     }
+
+    // DANGEROUS!
+    public void setRawPowerDangerous(double power){
+        left.setRawPowerDangerous(power);
+        right.setRawPowerDangerous(power);
+    }
+
     public void disalayDebug(Telemetry telemetry){
         left.displayDebugInfo(telemetry);
     }

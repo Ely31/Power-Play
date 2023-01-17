@@ -142,6 +142,12 @@ public class ScoringMech {
         lift.retract();
         arm.grabPassthrough();
     }
+    public void retract(double v4bTimerMs){
+        retractLift();
+        if (v4bTimerMs > Arm.pivotActuationTime){
+            v4bToGrabbingPos();
+        }
+    }
     public void retractLift(){
         lift.retract();
     }
@@ -152,6 +158,11 @@ public class ScoringMech {
     // ESSENTIAL to call this function every loop
     public void updateLift(){
         lift.update();
+    }
+
+    // DANGEROUS!
+    public void setRawLiftPowerDangerous(double power){
+        lift.setRawPowerDangerous(power);
     }
 
     // Stuff the ds with telemetry if we want

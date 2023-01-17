@@ -111,7 +111,7 @@ public class TeleMecDrive {
 
         slowInput = ((-1 + slowFactor) * slowInput)+1;
 
-        heading = -(imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading + Math.toRadians(90 * AutoToTele.allianceSide)) + headingOffset);
+        heading = -(imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading + Math.toRadians(-90 * AutoToTele.allianceSide)) + headingOffset);
 
         // Matrix math I don't understand to rotate the joystick input by the heading
         rotX = x * Math.cos(heading) - -y * Math.sin(heading);

@@ -90,6 +90,11 @@ public class LinearActuator {
         motor.setPower(Controller.update(getCurrentDistance()) + fCoefficient);
     }
 
+    // DANGEROUS!
+    public void setRawPowerDangerous(double power){
+        motor.setPower(power);
+    }
+
     // Position things
     public void setLimits(double min, double max){
         minDistance = min;

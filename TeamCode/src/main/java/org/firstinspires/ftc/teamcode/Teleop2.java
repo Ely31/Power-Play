@@ -15,7 +15,6 @@ import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
 import org.firstinspires.ftc.teamcode.vision.workspace.JunctionBasedOnHubPipeline;
 
-@Disabled
 @Config
 @TeleOp
 public class Teleop2 extends LinearOpMode {
@@ -44,7 +43,14 @@ public class Teleop2 extends LinearOpMode {
     }
     GrabbingState grabbingState = GrabbingState.OPEN;
 
-    boolean scoring = false;
+    enum ScoringState{
+        RETRACTED,
+        PREMOVED,
+        SCORING
+    }
+    ScoringState scoringState = ScoringState.RETRACTED;
+
+    // Stuff for rising edge detectors
     boolean prevScoringInput = false;
 
     boolean prevStackIndexUpInput = false;
@@ -53,10 +59,9 @@ public class Teleop2 extends LinearOpMode {
     boolean trackingJunction = false;
     boolean prevTrackingJunctionInput = false;
 
+    // Lift constants
     public static double liftPosEditStep = 0.15;
-
-    // Behavior configuration
-    public static boolean autoRetract = true;
+    public static double liftRawPowerAmount = -0.1;
 
     // Telemetry options
     public static boolean debug = true;
@@ -84,7 +89,7 @@ public class Teleop2 extends LinearOpMode {
             drivingSpeedMultiplier = 1 - (scoringMech.getLiftHeight() * 0.035);
             // Drive the bot
             // If tracking is on, we're scoring, and the driver isn't trying to turn the bot, hand over control of turning to the camera and pid controller
-            if (trackingJunction && scoring && (gamepad1.right_stick_x == 0)) {
+            if (trackingJunction && (scoringState == ScoringState.SCORING) && (gamepad1.right_stick_x == 0)) {
                 drive.driveFieldCentric(
                         gamepad1.left_stick_x * drivingSpeedMultiplier,
                         gamepad1.left_stick_y * drivingSpeedMultiplier,
@@ -129,55 +134,57 @@ public class Teleop2 extends LinearOpMode {
             }
             prevStackIndexDownInput = gamepad2.cross;
 
-            // Rising edge detector controlling a toggle for the extended state
-            if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
-                // Toggle scoring state
-                if (!scoring) scoring = true;
-                // If you were scoring and now you don't want to be, reset the pivotActuation timer to allow the stuff a few lines down to happen
-                else {
-                    scoring = false;
-                    pivotActuationTimer.reset();
-                }
-            }
-            prevScoringInput = (gamepad1.left_trigger > 0);
-
             // Claw control
             updateClaw(gamepad1.left_bumper);
 
-            // Extend or retract the lift based on this
-            if (scoring) scoringMech.score();
-            // Have a case to handle when the cone has not been released yet
-            else if (grabbingState == GrabbingState.ClOSED && clawActuationTimer.milliseconds() > Arm.clawActuationTime){
-                scoringMech.preMoveV4b();
-                // Wait til the v4b is clear of the junction before retracting the lift
-                if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime) {
-                    scoringMech.retractLift();
-                }
-            }
-            // This is the normal case
-            else {
-                scoringMech.v4bToGrabbingPos();
-                // Wait til the v4b is clear of the junction before retracting the lift
-                if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime) {
-                    scoringMech.retractLift();
-                }
-            }
+            // Run the scoring fsm
+            switch (scoringState){
+                case RETRACTED:
+                    scoringMech.retract(pivotActuationTimer.milliseconds());
 
-            // If autoRetract is on, retract everything if we were scoring and the claw is now open
-            // ("Open" actually means the cone has dropped away from the sensor)
-            if (autoRetract){
-                if (grabbingState == GrabbingState.OPEN && scoring){
-                    scoring = false;
-                }
+                    if (grabbingState == GrabbingState.ClOSED){
+                        scoringState = ScoringState.PREMOVED;
+                    }
+                    break;
+
+                case PREMOVED:
+                    scoringMech.retractLift();
+                    scoringMech.preMoveV4b();
+
+                    if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
+                        scoringState = ScoringState.SCORING;
+                    }
+                    break;
+
+                case SCORING:
+                    scoringMech.score();
+                    // Retract if you press the retract button
+                    if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
+                        pivotActuationTimer.reset();
+                        scoringState = ScoringState.RETRACTED;
+                    }
+                    // Or, retract automatically when you drop the cone
+                    if (grabbingState == GrabbingState.OPEN){
+                        pivotActuationTimer.reset();
+                        scoringState = ScoringState.RETRACTED;
+                    }
+                    break;
             }
+            prevScoringInput = (gamepad1.left_trigger > 0);
+
 
             // Update the lift so its pid controller runs, very important
-            scoringMech.updateLift();
+            // But, if you press a special key combo, escape pid control and bring the lift down
+            // With raw power to fix a lift issue
+            if (gamepad2.dpad_left && gamepad2.share){
+                scoringMech.setRawLiftPowerDangerous(liftRawPowerAmount);
+            }
+            else scoringMech.updateLift();
 
 
             // Print stuff to telemetry if we want to
             if (debug) {
-                telemetry.addData("extended", scoring);
+                telemetry.addData("scoring state", scoringState.name());
                 telemetry.addData("active junction", scoringMech.getActiveScoringJunction());
                 telemetry.addData("grabbing state", grabbingState.name());
                 telemetry.addData("stack index", scoringMech.getStackIndex());
@@ -189,25 +196,9 @@ public class Teleop2 extends LinearOpMode {
             }
             // Someone should be able to learn how to drive without looking at the source code
             if (instructionsOn) {
-                telemetry.addLine();
-                telemetry.addLine();
-                telemetry.addLine("Gamepad 1 controls:");
-                telemetry.addLine("Driving: Left stick is translation, right stick x is rotation. Use the right trigger to slow down.");
-                telemetry.addLine("calibrate feild-centric with the share button after you point the bot with the claw facing towards you");
-                telemetry.addLine();
-                telemetry.addLine("Lift and arm: toggle the claw open and closed with the left bumper, and toggle extend/retract with the left trigger");
-                telemetry.addLine("Switch levels with buttons cross, square, triangle, and circle.");
-                telemetry.addLine("Ground level is cross, levels get higher as you travel clockwise along the four buttons");
-                telemetry.addLine();
-                telemetry.addLine("Gamepad 2:");
-                telemetry.addLine("make fine adjustments to the current height with dpad up and down.");
-                telemetry.addLine("The height tweaks made are saved and will persist until the opmode is stopped.");
-                telemetry.addLine("Change the stach index (which preset grabbing height the robot retracts to) with cross and triangle");
-                telemetry.addLine("This allows you to grab off cone stacks");
-                telemetry.addLine();
-                telemetry.addLine();
-                telemetry.addLine("There's more details to the exact behavior of the code that you'll learn as you drive, but I don't want to write them down");
+              DrivingInstructions.printDrivingInstructions(telemetry);
             }
+
             telemetry.update();
         } // End of the loop
     }
