@@ -148,6 +148,10 @@ public class ScoringMech {
             v4bToGrabbingPos();
         }
     }
+    public void zeroLift(){
+        lift.zero();
+    }
+
     public void retractLift(){
         lift.retract();
     }

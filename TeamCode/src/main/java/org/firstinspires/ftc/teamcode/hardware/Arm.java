@@ -24,15 +24,15 @@ public class Arm {
     public static double pivotMax = 0.9;
     public static double pivotMin = 0.03;
     public static double pivotGrabbingPos = pivotMin;
-    public static double pivotScoringPos = 0.65;
+    public static double pivotScoringPos = 0.61;
     public static double pivotGroundScoringPos = 0.875;
-    public static double pivotPremovePos = 0.35;
+    public static double pivotPremovePos = 0.38;
     public static double pivotActuationTime = 250;
 
     public static double endMin = 0;
     public static double endMax = 1;
     public static double endGrabbingPos = 0.53;
-    public static double endScoringPos = 0.35;
+    public static double endScoringPos = 0.5;
     public static double endFlatScoringPos = 0.45;
     public static double endGroundScoringPos = 0.45;
 

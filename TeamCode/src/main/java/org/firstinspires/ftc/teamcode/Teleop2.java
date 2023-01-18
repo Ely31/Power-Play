@@ -50,6 +50,8 @@ public class Teleop2 extends LinearOpMode {
     }
     ScoringState scoringState = ScoringState.RETRACTED;
 
+    public static boolean autoRetract = false;
+
     // Stuff for rising edge detectors
     boolean prevScoringInput = false;
 
@@ -61,7 +63,7 @@ public class Teleop2 extends LinearOpMode {
 
     // Lift constants
     public static double liftPosEditStep = 0.15;
-    public static double liftRawPowerAmount = -0.1;
+    public static double liftRawPowerAmount = -0.2;
 
     // Telemetry options
     public static boolean debug = true;
@@ -142,7 +144,7 @@ public class Teleop2 extends LinearOpMode {
                 case RETRACTED:
                     scoringMech.retract(pivotActuationTimer.milliseconds());
 
-                    if (grabbingState == GrabbingState.ClOSED){
+                    if (grabbingState == GrabbingState.ClOSED && clawActuationTimer.milliseconds() > Arm.clawActuationTime){
                         scoringState = ScoringState.PREMOVED;
                     }
                     break;
@@ -154,6 +156,9 @@ public class Teleop2 extends LinearOpMode {
                     if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
                         scoringState = ScoringState.SCORING;
                     }
+                    if (grabbingState == GrabbingState.OPEN || grabbingState == GrabbingState.WAITING_OPEN){
+                        scoringState = ScoringState.RETRACTED;
+                    }
                     break;
 
                 case SCORING:
@@ -163,10 +168,13 @@ public class Teleop2 extends LinearOpMode {
                         pivotActuationTimer.reset();
                         scoringState = ScoringState.RETRACTED;
                     }
-                    // Or, retract automatically when you drop the cone
-                    if (grabbingState == GrabbingState.OPEN){
-                        pivotActuationTimer.reset();
-                        scoringState = ScoringState.RETRACTED;
+
+                    if (autoRetract) {
+                        // Or, retract automatically when you drop the cone
+                        if (grabbingState == GrabbingState.OPEN) {
+                            pivotActuationTimer.reset();
+                            scoringState = ScoringState.RETRACTED;
+                        }
                     }
                     break;
             }
@@ -178,6 +186,7 @@ public class Teleop2 extends LinearOpMode {
             // With raw power to fix a lift issue
             if (gamepad2.dpad_left && gamepad2.share){
                 scoringMech.setRawLiftPowerDangerous(liftRawPowerAmount);
+                scoringMech.zeroLift();
             }
             else scoringMech.updateLift();
 

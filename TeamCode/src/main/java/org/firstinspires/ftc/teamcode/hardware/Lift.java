@@ -41,6 +41,11 @@ public class Lift {
         setCoefficients(coeffs);
     }
 
+    public void zero(){
+        left.zero();
+        right.zero();
+    }
+
     public void setCoefficients(PIDCoefficients coeffs){
         left.setCoefficients(coeffs);
         right.setCoefficients(coeffs);
