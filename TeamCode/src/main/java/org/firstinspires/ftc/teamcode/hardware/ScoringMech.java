@@ -148,6 +148,12 @@ public class ScoringMech {
             v4bToGrabbingPos();
         }
     }
+    public void retractPremoved(double v4bTimerMs){
+        retractLift();
+        if (v4bTimerMs > Arm.pivotActuationTime){
+            preMoveV4b();
+        }
+    }
     public void zeroLift(){
         lift.zero();
     }

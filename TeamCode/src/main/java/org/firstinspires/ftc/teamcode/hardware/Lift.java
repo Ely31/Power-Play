@@ -20,7 +20,7 @@ public class Lift {
 
     public static double retractedPos = 0;
     public static double groundPos = 0;
-    public static double lowPos = 1;
+    public static double lowPos = 0;
     public static double mediumPos = 10;
     public static double highPos = 19.5;
 
