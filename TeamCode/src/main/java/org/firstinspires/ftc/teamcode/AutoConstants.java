@@ -65,7 +65,7 @@ public class AutoConstants {
         }
     }
 
-    public double grabApproachVelo = 20;
+    public double grabApproachVelo = 25;
     public double stackGrabbingTime = 0.6;
 
     // Pose2d's
@@ -94,6 +94,7 @@ public class AutoConstants {
     public TrajectorySequence park;
 
     public TrajectorySequence toJunctionImproved;
+    public TrajectorySequence toJunctionPressing;
     public TrajectorySequence toStackFromPreloadImproved;
 
 
@@ -127,6 +128,10 @@ public class AutoConstants {
 
         toJunctionImproved = drive.trajectorySequenceBuilder(toStackFromPreload.end())
                 .lineToSplineHeading(new Pose2d(-41, -13.5 * side, Math.toRadians(-137.5 * side)))
+                .build();
+
+        toJunctionPressing = drive.trajectorySequenceBuilder(toStackFromPreload.end())
+                .lineToSplineHeading(new Pose2d(-39.5, -13.5 * side, Math.toRadians(-135 * side)))
                 .build();
 
         toStackFromPreloadImproved = drive.trajectorySequenceBuilder(driveToPreloadPos.end())

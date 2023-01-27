@@ -65,7 +65,7 @@ public class Teleop2 extends LinearOpMode {
         // Init
         telemetry.setMsTransmissionInterval(100);
         // Bind hardware to the hardwaremap
-        drive = new TeleMecDrive(hardwareMap, 0.2);
+        drive = new TeleMecDrive(hardwareMap, 0.4);
         scoringMech = new ScoringMech(hardwareMap);
 
         waitForStart();
@@ -133,6 +133,7 @@ public class Teleop2 extends LinearOpMode {
                 telemetry.addData("active junction", scoringMech.getActiveScoringJunction());
                 telemetry.addData("grabbing state", grabbingState.name());
                 telemetry.addData("stack index", scoringMech.getStackIndex());
+                telemetry.addData("heading", drive.getHeading());
                 scoringMech.displayDebug(telemetry);
                 telemetry.addData("avg loop time (ms)", timeUtil.getAverageLoopTime());
                 telemetry.addData("period", timeUtil.getPeriod());

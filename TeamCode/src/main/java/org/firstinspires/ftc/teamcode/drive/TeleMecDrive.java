@@ -25,7 +25,10 @@ public class TeleMecDrive {
 
     private BNO055IMU imu;
     BNO055IMU.Parameters imuParameters;
-    public double heading;
+    private double heading;
+    public double getHeading(){
+        return heading;
+    }
     private double headingOffset = 0;
 
     private double rotX;
@@ -111,11 +114,11 @@ public class TeleMecDrive {
 
         slowInput = ((-1 + slowFactor) * slowInput)+1;
 
-        heading = -(imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading + Math.toRadians(-90 * AutoToTele.allianceSide)) + headingOffset);
+        heading = (imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading + Math.toRadians(-90)) + headingOffset);
 
         // Matrix math I don't understand to rotate the joystick input by the heading
-        rotX = x * Math.cos(heading) - -y * Math.sin(heading);
-        rotY = x * Math.sin(heading) + -y * Math.cos(heading);
+        rotX = x * Math.cos(-heading) - -y * Math.sin(-heading);
+        rotY = x * Math.sin(-heading) + -y * Math.cos(-heading);
 
         double lfPower = rotY + rotX + turn;
         double lbPower = rotY - rotX + turn;
@@ -150,7 +153,7 @@ public class TeleMecDrive {
         rb.setPower(RB);
     }
     public void resetHeading(){
-        AutoToTele.endOfAutoHeading = (Math.PI/2)*AutoToTele.allianceSide; // Unit circle coming in handy
-        headingOffset = -(imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading-Math.toRadians(90 * AutoToTele.allianceSide)));
+        AutoToTele.endOfAutoHeading = (Math.PI/2); // Unit circle coming in handy
+        headingOffset = -(imu.getAngularOrientation().firstAngle + (AutoToTele.endOfAutoHeading + Math.toRadians(90 * AutoToTele.allianceSide)));
     }
 }

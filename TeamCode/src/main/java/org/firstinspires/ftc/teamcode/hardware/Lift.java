@@ -118,6 +118,9 @@ public class Lift {
     public void setRetractedPos(double pos) {
         retractedPos = pos;
     }
+    public double getRetractedPos(){
+        return retractedPos;
+    }
     public void resetRetractedPos(){
         retractedPos = 0;
     }

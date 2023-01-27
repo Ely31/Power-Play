@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 //regular is the red side of the field, -1 is blue side of the field
 @Config
 @Autonomous
-public class AsyncAuto3 extends LinearOpMode {
+public class AsyncAuto4 extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
     PivotingCamera camera;
@@ -37,6 +37,7 @@ public class AsyncAuto3 extends LinearOpMode {
         SCORING_PRELOAD,
         WAITING_FOR_CONE_GRAB,
         TO_JUNCTION,
+        WAITING_TIL_CLEAR_OF_JUNCTION,
         TO_STACK,
         PARKING
     }
@@ -106,7 +107,7 @@ public class AsyncAuto3 extends LinearOpMode {
 
                 case SCORING_PRELOAD:
                         if (actionTimer.seconds() > 1.9){
-                            scoringMech.scoreAsync(Lift.mediumPos - 1.5);
+                            scoringMech.scoreAsync(Lift.mediumPos);
                         }
                         if (scoringMech.liftIsMostlyDown()){
                             // Send it off again
@@ -121,6 +122,16 @@ public class AsyncAuto3 extends LinearOpMode {
                         }
                     break;
 
+                case WAITING_TIL_CLEAR_OF_JUNCTION:
+                    if (actionTimer.seconds() > 0.7) {
+                        scoringMech.scoreQuickerAsync(Lift.highPos, true);
+                        scoringMech.retract();
+                        scoringMech.resetScoringState();
+                        actionTimer.reset();
+                        autoState = AutoState.TO_STACK;
+                    }
+                    break;
+
                 case TO_STACK:
                     scoringMech.grabOffStackAsync(4-cycleIndex, !drive.isBusy());
                     if (!drive.isBusy()){
@@ -132,7 +143,7 @@ public class AsyncAuto3 extends LinearOpMode {
                 case WAITING_FOR_CONE_GRAB:
                     scoringMech.grabOffStackAsync(4-cycleIndex, true);
                     if (actionTimer.seconds() > autoConstants.stackGrabbingTime){
-                        drive.followTrajectorySequenceAsync(autoConstants.toJunctionImproved);
+                        drive.followTrajectorySequenceAsync(autoConstants.toJunctionPressing);
                         actionTimer.reset();
                         scoringMech.resetStackGrabbingState();
                         scoringMech.setRetractedGrabbingPose(0);
@@ -142,18 +153,16 @@ public class AsyncAuto3 extends LinearOpMode {
 
                 case TO_JUNCTION:
                         if (actionTimer.seconds() > 0.5){
-                            scoringMech.scoreAsync(Lift.highPos - 1);
+                            scoringMech.scoreQuickerAsync(Lift.highPos, false);
                         }
                         if (scoringMech.liftIsMostlyDown()){
-                            scoringMech.retractLift();
-                            scoringMech.resetScoringState();
                             actionTimer.reset();
                             // Tell the code we made another cycle
                             cycleIndex ++;
                             // If we've done enough cycles, park
                             if (cycleIndex < autoConstants.getNumCycles()) {
                                 drive.followTrajectorySequenceAsync(autoConstants.toStack);
-                                autoState = AutoState.TO_STACK;
+                                autoState = AutoState.WAITING_TIL_CLEAR_OF_JUNCTION;
                             }
                             else {
                                 drive.followTrajectorySequenceAsync(autoConstants.park);
@@ -181,8 +190,6 @@ public class AsyncAuto3 extends LinearOpMode {
             telemetry.addData("cycle index", cycleIndex);
             telemetry.addData("number of cycles", autoConstants.getNumCycles());
             telemetry.addData("auto state", autoState.name());
-            telemetry.addData("heading", drive.getPoseEstimate().getHeading());
-            telemetry.addData("heading in degrees", Math.toDegrees(drive.getPoseEstimate().getHeading()));
             scoringMech.displayAutoMechDebug(telemetry);
             telemetry.update();
         }
