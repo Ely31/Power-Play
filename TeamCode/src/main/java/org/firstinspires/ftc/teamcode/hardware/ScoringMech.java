@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.Utility;
@@ -10,6 +11,10 @@ import org.firstinspires.ftc.teamcode.util.Utility;
 public class ScoringMech {
     Lift lift;
     Arm arm;
+    Servo bracer;
+
+    public static double bracerExtendedPos = 0.38;
+    public static double bracerRetractedPos = 0.7;
 
     int activeScoringJunction = 2;
     public void setActiveScoringJunction(int level){
@@ -63,6 +68,7 @@ public class ScoringMech {
     public ScoringMech(HardwareMap hwmap){
         lift = new Lift(hwmap);
         arm = new Arm(hwmap);
+        bracer = hwmap.get(Servo.class, "bracer");
         setStackIndex(0);
         setRetractedGrabbingPose(0);
     }
@@ -97,6 +103,14 @@ public class ScoringMech {
     }
     public double getLiftHeight(){
         return lift.getHeight();
+    }
+
+    // Bracer functions
+    public void extendBracer(){
+        bracer.setPosition(bracerExtendedPos);
+    }
+    public void retractBracer(){
+        bracer.setPosition(bracerRetractedPos);
     }
 
     // Functions that combine arm and lift
@@ -143,15 +157,15 @@ public class ScoringMech {
         arm.grabPassthrough();
     }
     public void retract(double v4bTimerMs){
-        retractLift();
+        v4bToGrabbingPos();
         if (v4bTimerMs > Arm.pivotActuationTime){
-            v4bToGrabbingPos();
+            retractLift();
         }
     }
     public void retractPremoved(double v4bTimerMs){
-        retractLift();
+        preMoveV4b();
         if (v4bTimerMs > Arm.pivotActuationTime){
-            preMoveV4b();
+            retractLift();
         }
     }
     public void zeroLift(){

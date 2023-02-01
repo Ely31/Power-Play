@@ -186,6 +186,13 @@ public class Teleop2 extends LinearOpMode {
         switch (scoringState){
             case RETRACTED:
                 scoringMech.retract(pivotActuationTimer.milliseconds());
+                // Handle bracer stuff
+                if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime + 500){
+                    // The servo doesn't need to be working once everything is back inside the bot
+                    scoringMech.extendBracer();
+                } else {
+                    scoringMech.retractBracer();
+                }
 
                 if (grabbingState == GrabbingState.ClOSED && clawActuationTimer.milliseconds() > Arm.clawActuationTime){
                     scoringState = ScoringState.PREMOVED;
@@ -194,6 +201,13 @@ public class Teleop2 extends LinearOpMode {
 
             case PREMOVED:
                 scoringMech.retractPremoved(pivotActuationTimer.milliseconds());
+
+                if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime + 300){
+                    // The servo doesn't need to be working once everything is back inside the bot
+                    scoringMech.extendBracer();
+                } else {
+                    scoringMech.retractBracer();
+                }
 
                 if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
                     scoringState = ScoringState.SCORING;
@@ -205,6 +219,7 @@ public class Teleop2 extends LinearOpMode {
 
             case SCORING:
                 scoringMech.score();
+                scoringMech.extendBracer();
                 // Retract if you press the retract button
                 if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
                     pivotActuationTimer.reset();

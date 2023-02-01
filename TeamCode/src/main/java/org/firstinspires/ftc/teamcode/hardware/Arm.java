@@ -26,7 +26,7 @@ public class Arm {
     public static double pivotGrabbingPos = pivotMin;
     public static double pivotScoringPos = 0.63;
     public static double pivotGroundScoringPos = 0.875;
-    public static double pivotPremovePos = 0.38;
+    public static double pivotPremovePos = 0.36;
     public static double pivotActuationTime = 250;
 
     public static double endMin = 0;
