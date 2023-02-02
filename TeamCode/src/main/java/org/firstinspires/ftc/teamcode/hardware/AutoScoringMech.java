@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -40,6 +41,7 @@ public class AutoScoringMech extends ScoringMech{
     public AutoScoringMech(HardwareMap hwmap){
         lift = new Lift(hwmap);
         arm = new Arm(hwmap);
+        bracer = hwmap.get(Servo.class, "bracer");
         setStackIndex(0);
         setRetractedGrabbingPose(0);
     }
@@ -70,6 +72,10 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
         }
+    }
+
+    public boolean doneGrabbingOffStack(){
+        return stackGrabbingState == StackGrabbingState.DONE;
     }
 
     public void grabOffStack(int coneNumber, boolean hasCone){
@@ -124,19 +130,21 @@ public class AutoScoringMech extends ScoringMech{
         }
     }
 
-    // This method is the same as scoreAsync but it extends the v4b and the lift at the same time
-    public void scoreQuickerAsync(double height, boolean hasBackedOffJunction){
+    // Uses and handles the bracer while scoring
+    public void scoreWithBracer(double height){
         // You have to call updateLift while using this for it to work
         switch (scoringState){
             case EXTENDING:
                 lift.setHeight(height);
                 arm.scorePassthrough(); // Move the v4b over the junction
+                extendBracer();
                 // Move on if the lift is all the way up
                 if (Utility.withinErrorOfValue(lift.getHeight(), height, 0.5)) {
                     scoringWait.reset();
                     scoringState = ScoringState.WAITING_FOR_V4B_EXTEND;
                 }
                 break;
+
             case WAITING_FOR_V4B_EXTEND:
                 if (scoringWait.seconds() > 0.2){ // Wait for the v4b to move all the way
                     arm.openClaw(); // Drop the cone
@@ -144,22 +152,37 @@ public class AutoScoringMech extends ScoringMech{
                     scoringState = ScoringState.WAITING_FOR_CONE_DROP;
                 }
                 break;
+
             case WAITING_FOR_CONE_DROP:
                 if (scoringWait.seconds() > 0.3){ // Wait for the cone to drop
                     scoringWait.reset();
+                    scoringState = ScoringState.WAITING_FOR_V4B_RETRACT;
+                }
+                break;
+
+            case WAITING_FOR_V4B_RETRACT:
+                v4bToGrabbingPos();
+                retractBracer();
+
+                if (scoringWait.milliseconds() > Arm.pivotActuationTime){
+                    scoringWait.reset();
+                    retractLift();
                     scoringState = ScoringState.RETRACTING;
                 }
                 break;
 
             case RETRACTING:
-                if (hasBackedOffJunction) {
-                    arm.grabPassthrough(); // Move the v4b inside the bot
-                    lift.setHeight(0); // Bring the lift down
-                }
+                retractLift();
                 // Move on if the lift is all the way down
                 if (Utility.withinErrorOfValue(lift.getHeight(), 0, 1)) {
+                    // Move this guy back in the bot so it doesn't get crunched
+                    extendBracer();
                     scoringState = ScoringState.DONE; // Finish
                 }
+                break;
+
+            case DONE:
+                extendBracer();
                 break;
         }
     }

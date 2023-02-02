@@ -107,7 +107,7 @@ public class AsyncAuto4 extends LinearOpMode {
 
                 case SCORING_PRELOAD:
                         if (actionTimer.seconds() > 1.9){
-                            scoringMech.scoreAsync(Lift.mediumPos);
+                            scoringMech.scoreWithBracer(Lift.mediumPos);
                         }
                         if (scoringMech.liftIsMostlyDown()){
                             // Send it off again
@@ -122,16 +122,6 @@ public class AsyncAuto4 extends LinearOpMode {
                         }
                     break;
 
-                case WAITING_TIL_CLEAR_OF_JUNCTION:
-                    if (actionTimer.seconds() > 0.7) {
-                        scoringMech.scoreQuickerAsync(Lift.highPos, true);
-                        scoringMech.retract();
-                        scoringMech.resetScoringState();
-                        actionTimer.reset();
-                        autoState = AutoState.TO_STACK;
-                    }
-                    break;
-
                 case TO_STACK:
                     scoringMech.grabOffStackAsync(4-cycleIndex, !drive.isBusy());
                     if (!drive.isBusy()){
@@ -142,7 +132,7 @@ public class AsyncAuto4 extends LinearOpMode {
 
                 case WAITING_FOR_CONE_GRAB:
                     scoringMech.grabOffStackAsync(4-cycleIndex, true);
-                    if (actionTimer.seconds() > autoConstants.stackGrabbingTime){
+                    if (scoringMech.doneGrabbingOffStack()){
                         drive.followTrajectorySequenceAsync(autoConstants.toJunctionPressing);
                         actionTimer.reset();
                         scoringMech.resetStackGrabbingState();
@@ -153,7 +143,7 @@ public class AsyncAuto4 extends LinearOpMode {
 
                 case TO_JUNCTION:
                         if (actionTimer.seconds() > 0.5){
-                            scoringMech.scoreQuickerAsync(Lift.highPos, false);
+                            scoringMech.scoreWithBracer(Lift.highPos);
                         }
                         if (scoringMech.liftIsMostlyDown()){
                             actionTimer.reset();
@@ -162,7 +152,7 @@ public class AsyncAuto4 extends LinearOpMode {
                             // If we've done enough cycles, park
                             if (cycleIndex < autoConstants.getNumCycles()) {
                                 drive.followTrajectorySequenceAsync(autoConstants.toStack);
-                                autoState = AutoState.WAITING_TIL_CLEAR_OF_JUNCTION;
+                                autoState = AutoState.TO_STACK;
                             }
                             else {
                                 drive.followTrajectorySequenceAsync(autoConstants.park);

@@ -88,14 +88,10 @@ public class AutoConstants {
     }
 
     public TrajectorySequence driveToPreloadPos;
-    public TrajectorySequence toStackFromPreload;
-    public TrajectorySequence toJunction;
-    public TrajectorySequence toStack;
-    public TrajectorySequence park;
-
-    public TrajectorySequence toJunctionImproved;
-    public TrajectorySequence toJunctionPressing;
     public TrajectorySequence toStackFromPreloadImproved;
+    public TrajectorySequence toStack;
+    public TrajectorySequence toJunctionPressing;
+    public TrajectorySequence park;
 
 
     public void updateTrajectories() {
@@ -104,41 +100,26 @@ public class AutoConstants {
                 .lineToSplineHeading(new Pose2d(-35.8, -8.2*side, Math.toRadians(128*side)))
                 .build();
 
-        toStackFromPreload = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
-                .setTangent(Math.toRadians(-120 * side))
+        toStackFromPreloadImproved = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
+                .setTangent(Math.toRadians(-130 * side))
                 .splineToSplineHeading(new Pose2d(-58, -12.2 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                .lineTo(new Vector2d(-64.7, -12.2 * side))
+                .lineTo(new Vector2d(-64.8, -12.2 * side))
                 .build();
 
-        toJunction = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-                .lineToSplineHeading(new Pose2d(-42.5, -11 * side, Math.toRadians(-146 * side)))
+        toJunctionPressing = drive.trajectorySequenceBuilder(toStackFromPreloadImproved.end())
+                .lineToSplineHeading(new Pose2d(-39.5, -13.5 * side, Math.toRadians(-135 * side)))
                 .build();
 
-        toStack = drive.trajectorySequenceBuilder(toJunction.end())
+        toStack = drive.trajectorySequenceBuilder(toJunctionPressing.end())
                 .setTangent(Math.toRadians(180 * side))
                 .splineToSplineHeading(new Pose2d(-58, -12.1 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
                 .lineTo(new Vector2d(-64.7, -12.1 * side))
                 .build();
 
-        park = drive.trajectorySequenceBuilder(toJunction.end())
+        park = drive.trajectorySequenceBuilder(toJunctionPressing.end())
                 .lineToSplineHeading(parkPos)
-                .build();
-
-        toJunctionImproved = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-                .lineToSplineHeading(new Pose2d(-41, -13.5 * side, Math.toRadians(-137.5 * side)))
-                .build();
-
-        toJunctionPressing = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-                .lineToSplineHeading(new Pose2d(-39.5, -13.5 * side, Math.toRadians(-135 * side)))
-                .build();
-
-        toStackFromPreloadImproved = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
-                .setTangent(Math.toRadians(-130 * side))
-                .splineToSplineHeading(new Pose2d(-58, -12.2 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
-                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
-                .lineTo(new Vector2d(-64.8, -12.2 * side))
                 .build();
     }
 

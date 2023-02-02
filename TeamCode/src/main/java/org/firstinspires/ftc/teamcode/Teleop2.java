@@ -43,7 +43,7 @@ public class Teleop2 extends LinearOpMode {
     }
     ScoringState scoringState = ScoringState.RETRACTED;
 
-    public static boolean autoRetract = false;
+    public static boolean autoRetract = true;
 
     // Stuff for rising edge detectors
     boolean prevClawInput = false;
@@ -54,7 +54,7 @@ public class Teleop2 extends LinearOpMode {
 
     // Lift constants
     public static double liftPosEditStep = 0.15;
-    public static double liftRawPowerAmount = -0.2;
+    public static double liftRawPowerAmount = 0.2;
 
     // Telemetry options
     public static boolean debug = true;
@@ -121,7 +121,11 @@ public class Teleop2 extends LinearOpMode {
             // But, if you press a special key combo, escape pid control and bring the lift down
             // With raw power to fix a lift issue
             if (gamepad2.dpad_left && gamepad2.share){
-                scoringMech.setRawLiftPowerDangerous(liftRawPowerAmount);
+                scoringMech.setRawLiftPowerDangerous(-liftRawPowerAmount);
+                scoringMech.zeroLift();
+            } else
+            if (gamepad2.dpad_right && gamepad2.share) {
+                scoringMech.setRawLiftPowerDangerous(1);
                 scoringMech.zeroLift();
             }
             else scoringMech.updateLift();

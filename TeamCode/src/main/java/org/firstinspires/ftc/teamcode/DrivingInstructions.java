@@ -22,5 +22,7 @@ public class DrivingInstructions {
         telemetry.addLine();
         telemetry.addLine();
         telemetry.addLine("There's more details to the exact behavior of the code that you'll learn as you drive, but I don't want to write them down");
+        telemetry.addLine();
+        telemetry.addLine("Note: these instructions may be out of date, I don't update them often");
     }
 }
