@@ -67,7 +67,7 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case LIFTING:
-                if (stackGrabbingWait.seconds() > 0.5){
+                if (stackGrabbingWait.seconds() > 0.3){
                     stackGrabbingState = StackGrabbingState.DONE;
                 }
                 break;

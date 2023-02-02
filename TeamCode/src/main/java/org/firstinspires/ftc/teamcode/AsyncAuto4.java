@@ -142,11 +142,12 @@ public class AsyncAuto4 extends LinearOpMode {
                     break;
 
                 case TO_JUNCTION:
-                        if (actionTimer.seconds() > 0.5){
+                        if (actionTimer.seconds() > 0.7){
                             scoringMech.scoreWithBracer(Lift.highPos);
                         }
                         if (scoringMech.liftIsMostlyDown()){
                             actionTimer.reset();
+                            scoringMech.resetScoringState();
                             // Tell the code we made another cycle
                             cycleIndex ++;
                             // If we've done enough cycles, park
@@ -177,9 +178,9 @@ public class AsyncAuto4 extends LinearOpMode {
             autoConstants.saveAutoPose();
 
             // Show telemetry because there are plenty of bugs it should help me fix
+            telemetry.addData("auto state", autoState.name());
             telemetry.addData("cycle index", cycleIndex);
             telemetry.addData("number of cycles", autoConstants.getNumCycles());
-            telemetry.addData("auto state", autoState.name());
             scoringMech.displayAutoMechDebug(telemetry);
             telemetry.update();
         }
