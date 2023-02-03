@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -16,6 +16,7 @@ public class AutoConstants {
     // Constructor
     public AutoConstants(SampleMecanumDrive drive){
         this.drive = drive;
+        randomMessageIndex = new Random().nextInt(messageList.length);
     }
 
     // 1 is red or left, -1 is blue or right
@@ -66,7 +67,6 @@ public class AutoConstants {
     }
 
     public double grabApproachVelo = 25;
-    public double stackGrabbingTime = 0.6;
 
     // Pose2d's
     public Pose2d startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
@@ -95,9 +95,20 @@ public class AutoConstants {
 
 
     public void updateTrajectories() {
+
+        startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
+
         // Trajectories
+        /*
+        // Old trajectory
         driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
                 .lineToSplineHeading(new Pose2d(-35.8, -8.2*side, Math.toRadians(128*side)))
+                .build();
+
+         */
+
+        driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
+                .lineToSplineHeading(new Pose2d(-35.8, -9.2*side, Math.toRadians(130*side)))
                 .build();
 
         toStackFromPreloadImproved = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
@@ -138,30 +149,37 @@ public class AutoConstants {
         telemetry.addLine(ramdomAutoCheckMessage());
     }
 
+    int randomMessageIndex;
+
+    String[] messageList = {
+            "CHECK THE AUTO, REMEMBER NANO FINALS 3!",
+            "Run the right auto kids!",
+            "Is it red? is it blue?",
+            "Is it left? is it right?",
+            "Are you SURE this is the program you want?",
+            "Ejecute el auto correcto!",
+            "올바른 자동 실행",
+            "Oi mate, didjya checkit eh?",
+            "What do those numbers say, hmmmm? Hmmmm?",
+            "C'mon man, just take a second to read the stuff",
+            "运行正确的自动",
+            "Don't waste the potential of this bot",
+            "How many cycles are we doin'?",
+            "Where are we parkin'?",
+            "Look. At. The. Side.",
+            "Look at the bot, now look at the screen",
+            "(insert mildly funny comment about auto)",
+            "ELYYYYY...",
+            "LUUUKEE...",
+            ":)",
+            "Don't lose worlds!",
+            "Pay attention bro",
+            "Don't pull a brainstormers FF finals"
+    };
+
     String ramdomAutoCheckMessage(){
         // Generate a random number and look up that index in the array of messages
-        String[] list = {
-                "CHECK THE AUTO, REMEMBER NANO FINALS 3!",
-                "Run the right auto kids!",
-                "Is it red? is it blue?",
-                "Is it left? is it right?",
-                "Are you SURE this is the program you want?",
-                "Ejecute el auto correcto!",
-                "올바른 자동 실행",
-                "Oi mate, didjya checkit eh?",
-                "What do those numbers say, hmmmm? Hmmmm?",
-                "C'mon man, just take a second to read the stuff",
-                "运行正确的自动",
-                "Don't waste the potential of this bot",
-                "How many cycles are we doin'?",
-                "Where are we parkin'?",
-                "Look. At. The. Side.",
-                "Look at the bot, now look at the screen",
-                "(insert mildly funny comment about auto)",
-                "ELYYYYY...",
-                "LUUUKEE...",
-                ":)"
-        };
-        return list[new Random().nextInt(list.length)];
+
+        return messageList[randomMessageIndex];
     }
 }

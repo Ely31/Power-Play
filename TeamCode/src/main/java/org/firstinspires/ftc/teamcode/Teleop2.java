@@ -1,19 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.control.PIDFController;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.drive.DrivingInstructions;
 import org.firstinspires.ftc.teamcode.drive.TeleMecDrive;
 import org.firstinspires.ftc.teamcode.hardware.Arm;
-import org.firstinspires.ftc.teamcode.hardware.PivotingCamera;
 import org.firstinspires.ftc.teamcode.hardware.ScoringMech;
 import org.firstinspires.ftc.teamcode.util.TimeUtil;
-import org.firstinspires.ftc.teamcode.vision.workspace.JunctionBasedOnHubPipeline;
 
 @Config
 @TeleOp
@@ -51,6 +47,8 @@ public class Teleop2 extends LinearOpMode {
 
     boolean prevStackIndexUpInput = false;
     boolean prevStackIndexDownInput = false;
+
+    boolean hackyExtendSignal = false;
 
     // Lift constants
     public static double liftPosEditStep = 0.15;
@@ -96,6 +94,11 @@ public class Teleop2 extends LinearOpMode {
             if (gamepad1.square)    scoringMech.setActiveScoringJunction(1);
             if (gamepad1.triangle)  scoringMech.setActiveScoringJunction(2);
             if (gamepad1.circle)    scoringMech.setActiveScoringJunction(3);
+
+            // This bit is hacked in to change the behavior without ripping up too much code
+            // If you press any of the buttons, make the signal true. If not, it's false.
+            hackyExtendSignal = gamepad1.cross || gamepad1.square || gamepad1.triangle || gamepad1.circle;
+
             // Edit the current level with the dpad on gamepad two
             if (gamepad2.dpad_up)   scoringMech.editCurrentLiftPos(liftPosEditStep);
             if (gamepad2.dpad_down) scoringMech.editCurrentLiftPos(-liftPosEditStep);
@@ -194,7 +197,9 @@ public class Teleop2 extends LinearOpMode {
                 if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime + 500){
                     // The servo doesn't need to be working once everything is back inside the bot
                     scoringMech.extendBracer();
-                } else {
+                }
+                // Don't retract the bracer when doing ground junctions, it would hit the bot
+                else if(!(scoringMech.getActiveScoringJunction() == 0)){
                     scoringMech.retractBracer();
                 }
 
@@ -209,11 +214,13 @@ public class Teleop2 extends LinearOpMode {
                 if (pivotActuationTimer.milliseconds() > Arm.pivotActuationTime + 300){
                     // The servo doesn't need to be working once everything is back inside the bot
                     scoringMech.extendBracer();
-                } else {
+                }
+                // Don't retract the bracer when doing ground junctions, it would hit the bot
+                else if(!(scoringMech.getActiveScoringJunction() == 0)){
                     scoringMech.retractBracer();
                 }
 
-                if ((gamepad1.left_trigger > 0) && !prevScoringInput) {
+                if (((gamepad1.left_trigger > 0) && !prevScoringInput) || hackyExtendSignal) {
                     scoringState = ScoringState.SCORING;
                 }
                 if (grabbingState == GrabbingState.OPEN || grabbingState == GrabbingState.WAITING_OPEN){

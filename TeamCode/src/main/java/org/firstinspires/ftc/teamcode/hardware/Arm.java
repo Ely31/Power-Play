@@ -38,7 +38,7 @@ public class Arm {
 
     public static double clawClosedPos = 0.93;
     public static double clawOpenPos = 0.45;
-    public static double clawActuationTime = 400; // In milliseconds
+    public static double clawActuationTime = 350; // In milliseconds
 
     public static double sensorThreshold = 900;
 

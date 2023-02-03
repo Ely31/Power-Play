@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -106,7 +106,7 @@ public class AsyncAuto4 extends LinearOpMode {
                     break;
 
                 case SCORING_PRELOAD:
-                        if (actionTimer.seconds() > 1.9){
+                        if (actionTimer.seconds() > 1.8){
                             scoringMech.scoreWithBracer(Lift.mediumPos);
                         }
                         if (scoringMech.liftIsMostlyDown()){

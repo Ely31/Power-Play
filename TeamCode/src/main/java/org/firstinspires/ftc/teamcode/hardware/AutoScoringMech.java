@@ -60,14 +60,14 @@ public class AutoScoringMech extends ScoringMech{
                 }
                 break;
             case GRABBING:
-                if (stackGrabbingWait.seconds() > 0.5){
+                if (stackGrabbingWait.milliseconds() > Arm.clawActuationTime){
                     stackGrabbingWait.reset();
                     preMoveV4b();
                     stackGrabbingState = StackGrabbingState.LIFTING;
                 }
                 break;
             case LIFTING:
-                if (stackGrabbingWait.seconds() > 0.3){
+                if (stackGrabbingWait.seconds() > 0.25){
                     stackGrabbingState = StackGrabbingState.DONE;
                 }
                 break;
@@ -200,7 +200,7 @@ public class AutoScoringMech extends ScoringMech{
     }
 
     public boolean liftIsMostlyDown(){
-        return getScoringState() == AutoScoringMech.ScoringState.RETRACTING;
+        return getScoringState() == ScoringState.WAITING_FOR_V4B_RETRACT;
     }
     public boolean liftIsCompletelyDown(){
         return Utility.withinErrorOfValue(lift.getRetractedPos(), 0,1);
