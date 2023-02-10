@@ -27,7 +27,7 @@ public class Arm {
     public static double pivotScoringPos = 0.63;
     public static double pivotGroundScoringPos = 0.875;
     public static double pivotPremovePos = 0.36;
-    public static double pivotActuationTime = 250;
+    public static double pivotActuationTime = 300;
 
     public static double endMin = 0;
     public static double endMax = 1;
@@ -40,7 +40,7 @@ public class Arm {
     public static double clawOpenPos = 0.45;
     public static double clawActuationTime = 350; // In milliseconds
 
-    public static double sensorThreshold = 900;
+    public static double sensorThreshold = 800;
 
     public Arm(HardwareMap hwmap){
         // Hardwaremap stuff

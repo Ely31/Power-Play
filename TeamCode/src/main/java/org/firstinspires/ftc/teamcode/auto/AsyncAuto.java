@@ -193,7 +193,7 @@ public class AsyncAuto extends LinearOpMode {
                         if (actionTimer.seconds() > 2){
                             scoringMech.scoreAsync(Lift.mediumPos + 0.5);
                         }
-                        if (scoringMech.liftIsMostlyDown()){
+                        if (scoringMech.liftIsGoingDown()){
                             // Send it off again
                             drive.followTrajectorySequenceAsync(toStackFromPreload);
                             actionTimer.reset();
@@ -226,7 +226,7 @@ public class AsyncAuto extends LinearOpMode {
                         if (actionTimer.seconds() > 1.7){
                             scoringMech.scoreAsync(Lift.highPos + 0.5);
                         }
-                        if (scoringMech.liftIsMostlyDown()){
+                        if (scoringMech.liftIsGoingDown()){
                             drive.followTrajectorySequenceAsync(toStack);
                             scoringMech.resetScoringState();
                             actionTimer.reset();
@@ -257,7 +257,7 @@ public class AsyncAuto extends LinearOpMode {
                     if (actionTimer.seconds() > 1.7){
                         scoringMech.scoreAsync(Lift.highPos + 0.5);
                     }
-                    if (scoringMech.liftIsMostlyDown()){
+                    if (scoringMech.liftIsGoingDown()){
                         drive.followTrajectorySequenceAsync(toStack);
                         scoringMech.resetScoringState();
                         actionTimer.reset();
@@ -288,7 +288,7 @@ public class AsyncAuto extends LinearOpMode {
                     if (actionTimer.seconds() > 1.2){
                         scoringMech.scoreAsync(Lift.highPos + 0.5);
                     }
-                    if (scoringMech.liftIsMostlyDown()){
+                    if (scoringMech.liftIsGoingDown()){
                         drive.followTrajectorySequenceAsync(park);
                         scoringMech.resetScoringState();
                         actionTimer.reset();

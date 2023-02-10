@@ -39,11 +39,10 @@ public class MeepMeep1 {
                 .setDimensions(15,15)
                 .setColorScheme(new ColorSchemeBlueDark())
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-21, -12*side, Math.toRadians(150*side)))
-                                .setTangent(Math.toRadians(180*side))
-                                .splineToSplineHeading(new Pose2d(-58,-12.2*side, Math.toRadians(180*side)), Math.toRadians(180*side))
-                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(10, Math.toRadians(180), 13.2))
-                                .lineTo(new Vector2d(-64, -12.2*side))
+                        drive.trajectorySequenceBuilder(new Pose2d(-39.5, -12.5 * side, Math.toRadians(-135 * side)))
+                                .lineToSplineHeading(new Pose2d(-50, -12.1 * side, Math.toRadians(180 * side)))
+                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(30, Math.toRadians(180), 13.2))
+                                .splineToSplineHeading(new Pose2d(-64.7, -12.1 * side, Math.toRadians(180*side)), Math.toRadians(180*side))
                                 .build()
                 );
 

@@ -74,52 +74,47 @@ public class AutoConstants {
     // Set parkPos to a default to avoid null issues
     public Pose2d parkPos = new Pose2d(-57, -12*side, Math.toRadians(180*side));
 
-    public Pose2d[] parkPositions = {
-            // Pos 1
-            new Pose2d(-61, -10*side, Math.toRadians(180*side)),
-            // Pos 2
-            new Pose2d(-37, -10*side, Math.toRadians(180*side)),
-            // Pos 3
-            new Pose2d(-13, -10*side, Math.toRadians(180*side))
-    };
+    public Pose2d[] parkPositions;
+
     public void updateParkPos(int posIndex){
+        parkPositions = new Pose2d[]{
+                // Pos 1
+                new Pose2d(-61, -12 * side, Math.toRadians(180 * side)),
+                // Pos 2
+                new Pose2d(-37, -12 * side, Math.toRadians(180 * side)),
+                // Pos 3
+                new Pose2d(-13, -12 * side, Math.toRadians(180 * side))
+        };
         // Grab the correct pos from the array and set parkPos to it
         parkPos = parkPositions[posIndex-1];
     }
 
     public TrajectorySequence driveToPreloadPos;
-    public TrajectorySequence toStackFromPreloadImproved;
+    public TrajectorySequence toStackFromPreload;
     public TrajectorySequence toStack;
     public TrajectorySequence toJunctionPressing;
     public TrajectorySequence park;
+    public TrajectorySequence toStackImproved;
+    public TrajectorySequence toStackFromPreloadImproved;
 
 
     public void updateTrajectories() {
 
         startPos = new Pose2d(-35.8, -63*side, Math.toRadians(-90*side));
 
-        // Trajectories
-        /*
-        // Old trajectory
         driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
-                .lineToSplineHeading(new Pose2d(-35.8, -8.2*side, Math.toRadians(128*side)))
+                .lineToSplineHeading(new Pose2d(-35.8, -9.7*side, Math.toRadians(130*side)))
                 .build();
 
-         */
-
-        driveToPreloadPos = drive.trajectorySequenceBuilder(startPos)
-                .lineToSplineHeading(new Pose2d(-35.8, -9.2*side, Math.toRadians(130*side)))
-                .build();
-
-        toStackFromPreloadImproved = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
+        toStackFromPreload = drive.trajectorySequenceBuilder(driveToPreloadPos.end())
                 .setTangent(Math.toRadians(-130 * side))
                 .splineToSplineHeading(new Pose2d(-58, -12.2 * side, Math.toRadians(180 * side)), Math.toRadians(180 * side))
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
                 .lineTo(new Vector2d(-64.8, -12.2 * side))
                 .build();
 
-        toJunctionPressing = drive.trajectorySequenceBuilder(toStackFromPreloadImproved.end())
-                .lineToSplineHeading(new Pose2d(-39.5, -13.5 * side, Math.toRadians(-135 * side)))
+        toJunctionPressing = drive.trajectorySequenceBuilder(toStackFromPreload.end())
+                .lineToSplineHeading(new Pose2d(-39.5, -12.5 * side, Math.toRadians(-133 * side)))
                 .build();
 
         toStack = drive.trajectorySequenceBuilder(toJunctionPressing.end())
@@ -131,6 +126,19 @@ public class AutoConstants {
 
         park = drive.trajectorySequenceBuilder(toJunctionPressing.end())
                 .lineToSplineHeading(parkPos)
+                .build();
+
+        toStackImproved = drive.trajectorySequenceBuilder(toJunctionPressing.end())
+                .lineToSplineHeading(new Pose2d(-47, -11.4 * side, Math.toRadians(180 * side)))
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
+                .splineToSplineHeading(new Pose2d(-64.7, -13.1 * side, Math.toRadians(180*side)), Math.toRadians(180*side))
+                .build();
+
+        toStackFromPreloadImproved = drive.trajectorySequenceBuilder(toJunctionPressing.end())
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(30, DriveConstants.MAX_ANG_VEL, 13.2))
+                .lineToSplineHeading(new Pose2d(-50, -11.75 * side, Math.toRadians(180 * side)))
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(grabApproachVelo, DriveConstants.MAX_ANG_VEL, 13.2))
+                .splineToSplineHeading(new Pose2d(-64.7, -13.1 * side, Math.toRadians(180*side)), Math.toRadians(180*side))
                 .build();
     }
 

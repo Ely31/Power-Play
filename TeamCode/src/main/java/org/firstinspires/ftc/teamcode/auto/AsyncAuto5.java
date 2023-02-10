@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.vision.workspace.SignalPipeline;
 //regular is the red side of the field, -1 is blue side of the field
 @Config
 @Autonomous
-public class AsyncAuto4 extends LinearOpMode {
+public class AsyncAuto5 extends LinearOpMode {
     // Pre init
     SampleMecanumDrive drive;
     PivotingCamera camera;
@@ -109,9 +109,9 @@ public class AsyncAuto4 extends LinearOpMode {
                         if (actionTimer.seconds() > 2){
                             scoringMech.scoreWithBracer(Lift.mediumPos);
                         }
-                        if (scoringMech.liftIsGoingDown()){
+                        if (scoringMech.liftIsMostlyDown()){
                             // Send it off again
-                            drive.followTrajectorySequenceAsync(autoConstants.toStackFromPreload);
+                            drive.followTrajectorySequenceAsync(autoConstants.toStackFromPreloadImproved);
                             actionTimer.reset();
                             // Reset the scoring fsm so it can run again next time
                             scoringMech.resetScoringState();
@@ -123,7 +123,12 @@ public class AsyncAuto4 extends LinearOpMode {
                     break;
 
                 case TO_STACK:
-                    scoringMech.grabOffStackAsync(4-cycleIndex, !drive.isBusy());
+                    if (actionTimer.seconds() > 0.25){
+                        scoringMech.grabOffStackAsync(4-cycleIndex, !drive.isBusy());
+                    } else {
+                        scoringMech.scoreWithBracer(Lift.highPos);
+                    }
+
                     if (!drive.isBusy()){
                         actionTimer.reset();
                         autoState = AutoState.WAITING_FOR_CONE_GRAB;
@@ -152,7 +157,7 @@ public class AsyncAuto4 extends LinearOpMode {
                             cycleIndex ++;
                             // If we've done enough cycles, park
                             if (cycleIndex < autoConstants.getNumCycles()) {
-                                drive.followTrajectorySequenceAsync(autoConstants.toStack);
+                                drive.followTrajectorySequenceAsync(autoConstants.toStackImproved);
                                 autoState = AutoState.TO_STACK;
                             }
                             else {

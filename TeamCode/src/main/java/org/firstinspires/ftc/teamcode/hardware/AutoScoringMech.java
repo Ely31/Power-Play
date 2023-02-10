@@ -164,7 +164,7 @@ public class AutoScoringMech extends ScoringMech{
                 v4bToGrabbingPos();
                 retractBracer();
 
-                if (scoringWait.milliseconds() > Arm.pivotActuationTime){
+                if (scoringWait.milliseconds() > Arm.pivotActuationTime + 300){
                     scoringWait.reset();
                     retractLift();
                     scoringState = ScoringState.RETRACTING;
@@ -199,11 +199,11 @@ public class AutoScoringMech extends ScoringMech{
         scoringState = ScoringState.EXTENDING;
     }
 
-    public boolean liftIsMostlyDown(){
+    public boolean liftIsGoingDown(){
         return getScoringState() == ScoringState.WAITING_FOR_V4B_RETRACT;
     }
-    public boolean liftIsCompletelyDown(){
-        return Utility.withinErrorOfValue(lift.getRetractedPos(), 0,1);
+    public boolean liftIsMostlyDown(){
+        return getScoringState() == ScoringState.RETRACTING;
     }
 
     public void displayAutoMechDebug(Telemetry telemetry){
