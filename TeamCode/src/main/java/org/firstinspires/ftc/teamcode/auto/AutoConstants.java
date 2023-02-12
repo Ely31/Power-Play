@@ -79,11 +79,11 @@ public class AutoConstants {
     public void updateParkPos(int posIndex){
         parkPositions = new Pose2d[]{
                 // Pos 1
-                new Pose2d(-61, -12 * side, Math.toRadians(180 * side)),
+                new Pose2d(-61, -11 * side, Math.toRadians(180 * side)),
                 // Pos 2
-                new Pose2d(-37, -12 * side, Math.toRadians(180 * side)),
+                new Pose2d(-37, -11 * side, Math.toRadians(180 * side)),
                 // Pos 3
-                new Pose2d(-13, -12 * side, Math.toRadians(180 * side))
+                new Pose2d(-13, -11 * side, Math.toRadians(180 * side))
         };
         // Grab the correct pos from the array and set parkPos to it
         parkPos = parkPositions[posIndex-1];
@@ -114,7 +114,7 @@ public class AutoConstants {
                 .build();
 
         toJunctionPressing = drive.trajectorySequenceBuilder(toStackFromPreload.end())
-                .lineToSplineHeading(new Pose2d(-39.5, -12.5 * side, Math.toRadians(-133 * side)))
+                .lineToSplineHeading(new Pose2d(-39, -12.5 * side, Math.toRadians(-135 * side)))
                 .build();
 
         toStack = drive.trajectorySequenceBuilder(toJunctionPressing.end())
