@@ -25,12 +25,12 @@ public class MeepMeep1 {
                 .setConstraints(55, 40, Math.toRadians(180), Math.toRadians(180), 13.2)
                 .setDimensions(15,15)
                 .followTrajectorySequence(drive ->
-                        drive.trajectorySequenceBuilder(new Pose2d(-8.8, -39.5,Math.toRadians(-126)))
-                                .lineToSplineHeading(new Pose2d(-11.1, -20, Math.toRadians(180)))
-                                .splineToConstantHeading(new Vector2d(-55,-12), Math.toRadians(180))
-                                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(5, Math.toRadians(120), 13.2))
-                                .lineTo(new Vector2d(-60, -12))
-                                .build()
+                        drive.trajectorySequenceBuilder(new Pose2d(0.00, 0.00, Math.toRadians(-90.0)))
+                        .splineToSplineHeading(new Pose2d(-14.35, 30.43, Math.toRadians(195.7)), Math.toRadians(115.3))
+                        .splineToSplineHeading(new Pose2d(9.70, 35.36, Math.toRadians(265.8)), Math.toRadians(11.6))
+                        .splineToSplineHeading(new Pose2d(-5.45, 2.28, Math.toRadians(355.9)), Math.toRadians(-114.6))
+                        .build()
+
                 );
 
         RoadRunnerBotEntity Bot2 = new DefaultBotBuilder(meepMeep)
@@ -49,8 +49,8 @@ public class MeepMeep1 {
         meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_KAI_DARK)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.9f)
-                //.addEntity(Bot1)
-                .addEntity(Bot2)
+                .addEntity(Bot1)
+                //.addEntity(Bot2)
                 .start();
     }
 }
